@@ -1,0 +1,11 @@
+package ru.capjack.tool.csi.client
+
+enum class ClientDisconnectReason {
+	CONSCIOUS,
+	SERVER_SHUTDOWN,
+	CONCURRENT,
+	SERVER_ERROR,
+	SERVER_PROTOCOL_BROKEN,
+	CLIENT_PROTOCOL_BROKEN,
+	CONNECTION_LOST
+}
