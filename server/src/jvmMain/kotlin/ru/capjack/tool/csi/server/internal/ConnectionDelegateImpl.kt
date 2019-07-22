@@ -1,23 +1,22 @@
 package ru.capjack.tool.csi.server.internal
 
+import ru.capjack.tool.csi.common.Connection
 import ru.capjack.tool.csi.common.ConnectionCloseReason
+import ru.capjack.tool.csi.common.ConnectionHandler
 import ru.capjack.tool.csi.common.formatLoggerMessageBytes
-import ru.capjack.tool.csi.server.Connection
-import ru.capjack.tool.csi.server.ConnectionHandler
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.FramedByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
-import ru.capjack.tool.io.InputByteBufferFramedView
 import ru.capjack.tool.io.readToArray
 import ru.capjack.tool.lang.alsoElse
 import ru.capjack.tool.lang.make
+import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
 import ru.capjack.tool.logging.wrap
 import ru.capjack.tool.utils.concurrency.LivingWorker
 import ru.capjack.tool.utils.concurrency.ScheduledExecutor
-import ru.capjack.tool.utils.concurrency.accessOnLive
-import ru.capjack.tool.utils.concurrency.deferOnLive
+import ru.capjack.tool.utils.concurrency.accessOrDeferOnLive
 import ru.capjack.tool.utils.concurrency.executeOnLive
 import ru.capjack.tool.utils.concurrency.withCaptureOnLive
 import java.util.concurrent.atomic.AtomicBoolean
@@ -27,73 +26,75 @@ internal class ConnectionDelegateImpl(
 	private val releaser: ConnectionReleaser,
 	private var processor: ConnectionProcessor,
 	executor: ScheduledExecutor,
-	activityTimeoutMilliseconds: Int
+	activityTimeoutMillis: Int
 ) : ConnectionDelegate, ConnectionHandler {
 	
-	private val logger = ownLogger.wrap { "[${connection.id} ${worker.alive.make("live", "dead")}] $it" }
-	private val worker = LivingWorker(executor)
+	private val logger: Logger = ownLogger.wrap { "[${connection.id}${worker.alive.make("", "-dead")}] $it" }
+	private val worker = LivingWorker(executor, ::syncHandleError)
 	
 	private val inputBuffer = FramedByteBuffer(64)
 	private val outputBuffer = ByteBuffer(64)
 	
 	private var active = AtomicBoolean(true)
-	private val activeChecker = executor.repeat(activityTimeoutMilliseconds, ::checkActivity)
+	private val activeChecker = executor.repeat(activityTimeoutMillis, ::checkActivity)
 	
 	override val connectionId: Any
 		get() = connection.id
-	
-	init {
-		syncSetProcessor(processor)
-	}
 	
 	override fun setProcessor(processor: ConnectionProcessor) {
 		if (worker.accessible) {
 			syncSetProcessor(processor)
 		}
 		else {
-			throw IllegalStateException()
+			worker.execute {
+				if (worker.alive) {
+					syncSetProcessor(processor)
+				}
+				else {
+					processor.processClose(this, false)
+				}
+			}
 		}
 	}
 	
 	override fun send(data: Byte) {
-		logger.trace { formatLoggerMessageBytes("Schedule send ", data) }
+		logger.trace { "Schedule send 1B" }
 		
-		worker.accessOnLive {
-			logger.trace { "Fill output 1B" }
-			outputBuffer.writeByte(data)
-		} alsoElse {
-			worker.deferOnLive {
-				logger.trace { "Send 1B" }
+		worker.accessOrDeferOnLive(
+			{ outputBuffer.writeByte(data) },
+			{
+				logger.trace { formatLoggerMessageBytes("Send ", data) }
 				connection.send(data)
 			}
-		}
+		)
 	}
 	
 	override fun send(data: ByteArray) {
-		logger.trace { formatLoggerMessageBytes("Schedule send ", data) }
+		logger.trace { "Schedule send ${data.size}B" }
 		
-		worker.accessOnLive {
-			logger.trace { "Fill output ${data.size}B" }
-			outputBuffer.writeArray(data)
-		} alsoElse {
-			worker.deferOnLive {
-				logger.trace { "Send ${data.size}B" }
+		worker.accessOrDeferOnLive(
+			{ outputBuffer.writeArray(data) },
+			{
+				logger.trace { formatLoggerMessageBytes("Send ", data) }
 				connection.send(data)
 			}
-		}
+		)
 	}
 	
 	override fun send(data: InputByteBuffer) {
-		logger.trace { formatLoggerMessageBytes("Schedule send ", data) }
+		logger.trace { "Schedule send ${data.readableSize}B" }
 		
-		worker.accessOnLive {
-			logger.trace { "Fill output ${data.readableSize}B" }
-			outputBuffer.writeBuffer(data)
-		} alsoElse {
-			data.readToArray().also {
-				worker.deferOnLive {
-					logger.trace { "Send ${it.size}B" }
-					connection.send(it)
+		if (worker.alive) {
+			if (worker.accessible) {
+				outputBuffer.writeBuffer(data)
+			}
+			else {
+				val array = data.readToArray()
+				worker.defer {
+					if (worker.alive) {
+						logger.trace { formatLoggerMessageBytes("Send ", array) }
+						connection.send(array)
+					}
 				}
 			}
 		}
@@ -102,25 +103,17 @@ internal class ConnectionDelegateImpl(
 	override fun close(reason: ConnectionCloseReason) {
 		logger.trace { "Schedule close by $reason" }
 		
-		worker.accessOnLive {
-			syncClose(reason)
-		} alsoElse {
-			worker.deferOnLive {
-				syncClose(reason)
-			}
-		}
+		worker.accessOrDeferOnLive { syncClose(reason) }
 	}
 	
-	override fun terminate() {
-		logger.trace { "Schedule terminate" }
+	override fun close() {
+		logger.trace { "Schedule close" }
 		
-		worker.accessOnLive(::syncTerminate) alsoElse {
-			worker.deferOnLive(::syncTerminate)
-		}
+		worker.accessOrDeferOnLive(::syncClose)
 	}
 	
 	override fun handleInput(data: InputByteBuffer) {
-		logger.trace { formatLoggerMessageBytes("Handle input ", data) }
+		logger.trace { "Handle input ${data.readableSize}B" }
 		
 		active.set(true)
 		
@@ -141,14 +134,14 @@ internal class ConnectionDelegateImpl(
 		logger.trace { "Handle close" }
 		
 		worker.executeOnLive {
-			processor.processClose(this, true)
-			syncTerminate()
+			syncTerminate(true)
 		}
 	}
 	
 	private fun checkActivity() {
 		if (!active.compareAndSet(true, false)) {
 			logger.trace { "Activity timeout expired" }
+			activeChecker.cancel()
 			worker.executeOnLive {
 				syncClose(ConnectionCloseReason.ACTIVITY_TIMEOUT_EXPIRED)
 			}
@@ -156,21 +149,14 @@ internal class ConnectionDelegateImpl(
 	}
 	
 	private fun syncSetProcessor(processor: ConnectionProcessor) {
-		logger.trace { "Use processor ${processor::class.simpleName}" }
+		logger.trace { "Use processor ${processor.javaClass.simpleName}" }
 		this.processor = processor
 	}
 	
 	private fun syncProcessInput() {
-		logger.trace { "Process input ${inputBuffer.readableSize}B" }
+		logger.trace { formatLoggerMessageBytes("Process input ", inputBuffer) }
 		
-		try {
-			while (inputBuffer.readable && processor.processInput(this, inputBuffer)) {
-			}
-		}
-		catch (e: Throwable) {
-			logger.error("Error on process input data", e)
-			inputBuffer.clear()
-			syncClose(ConnectionCloseReason.SERVER_ERROR)
+		while (worker.alive && inputBuffer.readable && processor.processInput(this, inputBuffer)) {
 		}
 		
 		if (worker.alive) {
@@ -180,7 +166,7 @@ internal class ConnectionDelegateImpl(
 	
 	private fun syncFlushOutput() {
 		if (outputBuffer.readable) {
-			logger.trace { "Flush output ${outputBuffer.readableSize}B" }
+			logger.trace { formatLoggerMessageBytes("Send ", outputBuffer) }
 			
 			do {
 				connection.send(outputBuffer)
@@ -192,20 +178,32 @@ internal class ConnectionDelegateImpl(
 	private fun syncClose(reason: ConnectionCloseReason) {
 		logger.trace { "Close by $reason" }
 		
-		processor.processClose(this, false)
-		
 		send(reason.flag)
 		syncFlushOutput()
-		syncTerminate()
+		syncTerminate(false)
 	}
 	
-	private fun syncTerminate() {
-		logger.trace { "Terminate" }
+	private fun syncClose() {
+		logger.trace { "Close" }
+		syncFlushOutput()
+		syncTerminate(false)
+	}
+	
+	private fun syncTerminate(loss: Boolean) {
+		val p = processor
 		
-		setProcessor(FakeConnectionProcessor)
-		activeChecker.cancel()
+		inputBuffer.clear()
 		worker.die()
+		setProcessor(NothingConnectionProcessor)
+		activeChecker.cancel()
 		connection.close()
 		releaser.releaseConnection(this)
+		
+		p.processClose(this, loss)
+	}
+	
+	private fun syncHandleError(t: Throwable) {
+		logger.error("Uncaught exception", t)
+		connection.close()
 	}
 }

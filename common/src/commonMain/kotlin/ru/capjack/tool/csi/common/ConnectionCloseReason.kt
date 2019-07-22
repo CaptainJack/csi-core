@@ -1,7 +1,7 @@
 package ru.capjack.tool.csi.common
 
 enum class ConnectionCloseReason(val flag: Byte) {
-	CONSCIOUS(ProtocolFlag.CLOSE),
+	CLOSE(ProtocolFlag.CLOSE),
 	SERVER_SHUTDOWN(ProtocolFlag.CLOSE_SERVER_SHUTDOWN),
 	ACTIVITY_TIMEOUT_EXPIRED(ProtocolFlag.CLOSE_ACTIVITY_TIMEOUT_EXPIRED),
 	AUTHORIZATION_REJECT(ProtocolFlag.CLOSE_AUTHORIZATION_REJECT),

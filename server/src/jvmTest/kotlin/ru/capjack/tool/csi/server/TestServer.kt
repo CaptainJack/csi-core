@@ -1,116 +1,194 @@
 package ru.capjack.tool.csi.server
 
-import org.junit.Test
-import ru.capjack.tool.utils.concurrency.ScheduledExecutor
-import ru.capjack.tool.utils.wait
+import ru.capjack.tool.csi.common.Connection
+import ru.capjack.tool.csi.server.stubs.PdConnectionGateway
+import ru.capjack.tool.csi.server.utils.createServer
+import ru.capjack.tool.csi.server.utils.waitThreads
+import ru.capjack.tool.io.InputByteBuffer
+import ru.capjack.tool.lang.waitIf
+import ru.capjack.tool.utils.Closeable
 import java.lang.Thread.sleep
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.Executors
-import kotlin.concurrent.thread
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class TestServer {
 	
-	private val connectionGateway = StubConnectionGateway()
+	@Test(expected = IllegalArgumentException::class)
+	fun `Server init fail with negative activity timeout`() {
+		createServer(-1, 0, object : ConnectionGateway {
+			override fun open(acceptor: ConnectionAcceptor) = Closeable.DUMMY
+		})
+	}
 	
-	private val clientAuthorizer = StubClientAuthorizer()
-	private val clientAcceptor = StubClientAcceptor()
-	
-	private val server = Server(
-		ScheduledExecutor(Executors.newScheduledThreadPool(4)),
-		clientAuthorizer,
-		clientAcceptor,
-		connectionGateway,
-		1
-	)
-	
-	@Test
-	fun `Server fast stops on non connections`() {
-		val time = now()
-		server.stop(1)
-		
-		assertTrue(time.passedLess(100))
+	@Test(expected = IllegalArgumentException::class)
+	fun `Server init with negative shutdown timeout`() {
+		createServer(1000, -1, object : ConnectionGateway {
+			override fun open(acceptor: ConnectionAcceptor) = Closeable.DUMMY
+		})
 	}
 	
 	@Test
-	fun `Server ignore stop after stop`() {
-		server.stop(1)
-		server.stop(1)
+	fun `Fast stop on non connections`() {
+		val server = createServer(1000, 0, object : ConnectionGateway {
+			override fun open(acceptor: ConnectionAcceptor) = Closeable.DUMMY
+		})
 		
-		assertEquals(1, connectionGateway.closeCounter)
+		val time = System.currentTimeMillis()
+		
+		server.stop()
+		
+		assertTrue(System.currentTimeMillis() - time < 10)
 	}
 	
 	@Test
-	fun `Server stops on exists connections`() {
+	fun `One stop on many concurrent stop calls`() {
+		val counter = AtomicInteger()
 		
-		val connections = ConcurrentLinkedQueue<StubConnection>()
+		val server = createServer(1000, 0, object : ConnectionGateway, Closeable {
+			override fun open(acceptor: ConnectionAcceptor) = this
+			override fun close() {
+				counter.incrementAndGet()
+			}
+		})
 		
-		repeat(3) {
-			thread { connectionGateway.produceConnection() }
+		waitThreads(3) {
+			server.stop()
 		}
 		
-		if (wait(100) { server.statistic.connections != 3 }) {
-			fail()
+		assertEquals(1, counter.get())
+	}
+	
+	
+	@Test()
+	fun `Stop on silent connections with timeout`() {
+		val gateway = PdConnectionGateway()
+		val server = createServer(1000, 100, gateway)
+		val connections = 3
+		
+		repeat(connections) {
+			gateway.produceConnection {
+				iData("08 00 00 00 64 11")
+				iClose()
+			}
 		}
 		
-		server.stop(1)
-		
-		if (wait(1000) { server.statistic.connections != 0 }) {
-			fail()
+		if (waitIf(100) { server.statistic.connections != connections }) {
+			fail("connections = ${server.statistic.connections}")
 		}
 		
-		for (connection in connections) {
-			assertEquals(1, connection.closeCounter)
-			assertEqualsBytes(
-				"08 00 00 00 01 11",
-				connection.output
-			)
+		server.stop()
+		
+		if (waitIf(100) { server.statistic.connections != 0 }) {
+			fail("connections = ${server.statistic.connections}")
 		}
+		
+		gateway.checkAllConnectionsCompleted()
+	}
+	
+	@Test()
+	fun `Stop on silent connections with timeout when they close independently`() {
+		val gateway = PdConnectionGateway()
+		val server = createServer(1000, 100, gateway)
+		val connections = 3
+		
+		repeat(connections) {
+			gateway.produceConnection {
+				iData("08 00 00 00 64")
+				oClose()
+				iClose()
+			}
+		}
+		
+		if (waitIf(100) { server.statistic.connections != connections }) {
+			fail("connections = ${server.statistic.connections}")
+		}
+		
+		server.stop()
+		
+		if (waitIf(100) { server.statistic.connections != 0 }) {
+			fail("connections = ${server.statistic.connections}")
+		}
+		
+		gateway.checkAllConnectionsCompleted()
+	}
+	
+	@Test()
+	fun `Stop on silent connections without timeout`() {
+		val gateway = PdConnectionGateway()
+		val server = createServer(1000, 0, gateway)
+		val connections = 3
+		
+		repeat(connections) {
+			gateway.produceConnection {
+				iData("11")
+				iClose()
+			}
+		}
+		
+		if (waitIf(100) { server.statistic.connections != connections }) {
+			fail("connections = ${server.statistic.connections}")
+		}
+		
+		server.stop()
+		
+		if (waitIf(100) { server.statistic.connections != 0 }) {
+			fail("connections = ${server.statistic.connections}")
+		}
+		
+		gateway.checkAllConnectionsCompleted()
 	}
 	
 	@Test
-	fun `Release connection on server stops`() {
-		connectionGateway.produceConnection()
+	fun `Fast release connection on server stopped`() {
+		val gateway = PdConnectionGateway()
+		val server = createServer(1000, 0, gateway)
 		
-		thread { server.stop(1) }
+		server.stop()
+		
+		gateway.produceConnection {
+			iData("11")
+			iClose()
+		}
 		
 		sleep(100)
 		
-		val connection = connectionGateway.produceConnection()
-		
-		assertEquals(1, connection.closeCounter)
-		assertEqualsBytes("11", connection.output)
-		
-		if (wait(1000) { server.statistic.connections != 0 }) {
-			fail()
-		}
+		gateway.checkAllConnectionsCompleted()
 	}
+	
 	
 	@Test
 	fun `Hung connection on server stops`() {
-		connectionGateway.produceConnection(onSend = { sleep(2000) })
+		val server = createServer(1000, 0, object : ConnectionGateway {
+			override fun open(acceptor: ConnectionAcceptor): Closeable {
+				acceptor.acceptConnection(object : Connection {
+					override val id: Any
+						get() = 1
+					
+					override fun send(data: Byte) {}
+					
+					override fun send(data: ByteArray) {
+						sleep(300)
+					}
+					
+					override fun send(data: InputByteBuffer) {}
+					
+					override fun close() {
+					}
+					
+				})
+				return Closeable.DUMMY
+			}
+		})
 		
-		thread { server.stop(1) }
-		
-		sleep(1100)
 		
 		assertEquals(1, server.statistic.connections)
 		
-		sleep(500)
+		server.stop()
 		
-		assertEquals(0, server.statistic.connections)
-	}
-	
-	@Test
-	fun `Server has non connections after connection closed by inactive`() {
-		val connection = connectionGateway.produceConnection()
-		
-		sleep(2100)
-		
-		assertEquals(1, connection.closeCounter)
-		assertEqualsBytes("12", connection.output)
+		sleep(1000)
 		
 		assertEquals(0, server.statistic.connections)
 	}

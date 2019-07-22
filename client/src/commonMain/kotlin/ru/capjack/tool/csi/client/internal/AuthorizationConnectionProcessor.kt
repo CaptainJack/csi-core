@@ -45,15 +45,15 @@ internal class AuthorizationConnectionProcessor(
 	override fun processInputClose(reason: ConnectionCloseReason) {
 		val failReason = when (reason) {
 			ConnectionCloseReason.AUTHORIZATION_REJECT     -> ConnectFailReason.AUTHORIZATION_REJECTED
-			ConnectionCloseReason.PROTOCOL_BROKEN          -> ConnectFailReason.SERVER_PROTOCOL_BROKEN
+			ConnectionCloseReason.PROTOCOL_BROKEN          -> ConnectFailReason.PROTOCOL_BROKEN
 			ConnectionCloseReason.SERVER_ERROR             -> ConnectFailReason.SERVER_ERROR
-			ConnectionCloseReason.CONSCIOUS                -> ConnectFailReason.CONNECTION_REFUSED
+			ConnectionCloseReason.CLOSE                    -> ConnectFailReason.CONNECTION_REFUSED
 			ConnectionCloseReason.SERVER_SHUTDOWN          -> ConnectFailReason.CONNECTION_REFUSED
 			ConnectionCloseReason.ACTIVITY_TIMEOUT_EXPIRED -> ConnectFailReason.CONNECTION_REFUSED
 			ConnectionCloseReason.CONCURRENT               -> ConnectFailReason.CONNECTION_REFUSED
 			else                                           -> {
 				ownLogger.error("Unexpected close reason $reason")
-				ConnectFailReason.CLIENT_PROTOCOL_BROKEN
+				ConnectFailReason.PROTOCOL_BROKEN
 			}
 		}
 		

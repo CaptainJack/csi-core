@@ -17,5 +17,5 @@ internal interface ConnectionDelegate {
 	
 	fun close(reason: ConnectionCloseReason)
 	
-	fun terminate()
+	fun close()
 }

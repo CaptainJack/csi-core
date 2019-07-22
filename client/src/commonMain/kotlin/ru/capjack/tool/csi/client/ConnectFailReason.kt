@@ -3,8 +3,7 @@ package ru.capjack.tool.csi.client
 enum class ConnectFailReason {
 	CONNECTION_REFUSED,
 	AUTHORIZATION_REJECTED,
-	CLIENT_PROTOCOL_BROKEN,
-	SERVER_PROTOCOL_BROKEN,
+	PROTOCOL_BROKEN,
 	SERVER_ERROR
 }
 

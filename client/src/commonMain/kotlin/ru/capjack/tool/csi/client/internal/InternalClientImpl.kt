@@ -3,11 +3,12 @@ package ru.capjack.tool.csi.client.internal
 import ru.capjack.tool.csi.client.ClientAcceptor
 import ru.capjack.tool.csi.client.ClientDisconnectReason
 import ru.capjack.tool.csi.client.ClientHandler
-import ru.capjack.tool.csi.client.Connection
 import ru.capjack.tool.csi.client.ConnectionAcceptor
-import ru.capjack.tool.csi.client.ConnectionHandler
 import ru.capjack.tool.csi.client.ConnectionProducer
+import ru.capjack.tool.csi.client.ConnectionRecoveryHandler
+import ru.capjack.tool.csi.common.Connection
 import ru.capjack.tool.csi.common.ConnectionCloseReason
+import ru.capjack.tool.csi.common.ConnectionHandler
 import ru.capjack.tool.csi.common.OutgoingMessage
 import ru.capjack.tool.csi.common.OutgoingMessageBuffer
 import ru.capjack.tool.csi.common.ProtocolFlag
@@ -15,13 +16,15 @@ import ru.capjack.tool.io.FramedInputByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.putInt
 import ru.capjack.tool.io.readToArray
-import ru.capjack.tool.lang.alsoElse
 import ru.capjack.tool.lang.alsoIf
+import ru.capjack.tool.lang.make
+import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
+import ru.capjack.tool.logging.wrap
 import ru.capjack.tool.utils.concurrency.LivingWorker
 import ru.capjack.tool.utils.concurrency.ScheduledExecutor
-import ru.capjack.tool.utils.concurrency.accessOnLive
+import ru.capjack.tool.utils.concurrency.accessOrExecuteOnLive
 import ru.capjack.tool.utils.concurrency.executeOnLive
 import ru.capjack.tool.utils.concurrency.withCapture
 
@@ -30,13 +33,13 @@ internal class InternalClientImpl(
 	private val connectionProducer: ConnectionProducer,
 	private var delegate: ConnectionDelegate,
 	private var sessionId: ByteArray,
-	private val activityTimeoutSeconds: Int
+	private val activityTimeoutMillis: Int
 ) : InternalClient, ConnectionProcessor {
 	
-	private val logger = ownLogger
-	private val worker = LivingWorker(executor)
+	private val logger: Logger = ownLogger.wrap { "[${worker.alive.make("${delegate.connectionId}", "dead")}] $it" }
+	private val worker = LivingWorker(executor, ::syncHandleError)
 	
-	private var processor: InternalClientProcessor = FakeInternalClientProcessor()
+	private var processor: InternalClientProcessor = NothingInternalClientProcessor()
 	
 	private var lastReceivedMessageId = 0
 	private var lastReceivedMessageIdSend = false
@@ -44,21 +47,14 @@ internal class InternalClientImpl(
 	
 	private val outgoingMessages = OutgoingMessageBuffer()
 	
-	init {
-		syncSetProcessor(processor)
-	}
 	
 	override fun accept(acceptor: ClientAcceptor) {
-		logger.trace { "Schedule accept" }
-		
-		worker.executeOnLive {
-			logger.trace { "Accept" }
-			syncSetProcessor(MessagingProcessor(acceptor.acceptSuccess(this)))
-		}
+		logger.trace { "Accept" }
+		syncSetProcessor(MessagingProcessor(acceptor.acceptSuccess(this)))
 	}
 	
 	override fun processInput(delegate: ConnectionDelegate, buffer: FramedInputByteBuffer): Boolean {
-		logger.trace { "Try process input ${buffer.readableSize} bytes" }
+		logger.trace { "Try process input ${buffer.readableSize}B" }
 		
 		worker.withCapture {
 			while (worker.alive && buffer.readable) {
@@ -66,12 +62,16 @@ internal class InternalClientImpl(
 					return false
 				}
 			}
-			syncSendLastReceivedMessageId()
+			if (worker.alive) {
+				syncSendLastReceivedMessageId()
+			}
 		}
 		return true
 	}
 	
 	override fun processLoss(delegate: ConnectionDelegate) {
+		logger.trace { "Schedule lost" }
+		
 		worker.executeOnLive {
 			if (this.delegate == delegate) {
 				processor.processLoss()
@@ -80,50 +80,47 @@ internal class InternalClientImpl(
 	}
 	
 	override fun sendMessage(data: Byte) {
-		logger.trace { "Schedule send message of 1 bytes" }
+		logger.trace { "Schedule send message of 1B" }
 		
-		worker.accessOnLive {
+		worker.accessOrExecuteOnLive {
 			syncSendMessage(outgoingMessages.add(data))
-		} alsoElse {
-			worker.executeOnLive {
-				syncSendMessage(outgoingMessages.add(data))
-			}
 		}
 	}
 	
 	override fun sendMessage(data: ByteArray) {
-		logger.trace { "Schedule send message of ${data.size} bytes" }
+		logger.trace { "Schedule send message of ${data.size}B" }
 		
-		worker.accessOnLive {
+		worker.accessOrExecuteOnLive {
 			syncSendMessage(outgoingMessages.add(data))
-		} alsoElse {
-			worker.executeOnLive {
-				syncSendMessage(outgoingMessages.add(data))
-			}
 		}
 	}
 	
 	override fun sendMessage(data: InputByteBuffer) {
-		logger.trace { "Schedule send message of ${data.readableSize} bytes" }
+		logger.trace { "Schedule send message of ${data.readableSize}B" }
 		
-		worker.accessOnLive {
-			syncSendMessage(outgoingMessages.add(data))
-		} alsoElse {
-			data.readToArray().also { bytes ->
-				worker.executeOnLive {
-					syncSendMessage(outgoingMessages.add(bytes))
+		if (worker.alive) {
+			if (worker.accessible) {
+				syncSendMessage(outgoingMessages.add(data))
+			}
+			else {
+				data.readToArray().also { bytes ->
+					worker.execute {
+						if (worker.alive) {
+							syncSendMessage(outgoingMessages.add(bytes))
+						}
+					}
 				}
 			}
 		}
 	}
 	
-	
 	override fun disconnect() {
-		logger.trace { "Disconnect" }
-		worker.executeOnLive {
+		logger.trace { "Schedule disconnect" }
+		
+		worker.accessOrExecuteOnLive {
 			val d = delegate
 			syncSendLastReceivedMessageId()
-			syncDisconnect(ClientDisconnectReason.CONSCIOUS)
+			syncDisconnect(ClientDisconnectReason.CLOSE)
 			d.close()
 		}
 	}
@@ -149,17 +146,24 @@ internal class InternalClientImpl(
 	}
 	
 	private fun syncDisconnect(reason: ClientDisconnectReason) {
-		logger.trace { "Disconnect" }
+		logger.trace { "Disconnect by $reason" }
 		
 		worker.die()
 		
 		processor.processDisconnect(reason)
 		
-		delegate = FakeConnectionDelegate()
-		syncSetProcessor(FakeInternalClientProcessor())
+		delegate = DummyConnectionDelegate()
+		syncSetProcessor(NothingInternalClientProcessor())
 		
 		outgoingMessages.clear()
 	}
+	
+	private fun syncHandleError(t: Throwable) {
+		logger.error("Uncaught exception", t)
+		delegate.close()
+		syncDisconnect(ClientDisconnectReason.CLIENT_ERROR)
+	}
+	
 	
 	///
 	
@@ -172,7 +176,7 @@ internal class InternalClientImpl(
 	private inner class MessagingProcessor(private val handler: ClientHandler) : AbstractInputProcessor(), InternalClientProcessor {
 		
 		private var active = true
-		private val activeChecker = executor.repeat(activityTimeoutSeconds * 1000 / 2, ::checkActivity)
+		private val activeChecker = executor.repeat(activityTimeoutMillis / 2, ::checkActivity)
 		
 		private var inputState = MessagingInputState.MESSAGE_ID
 		private var inputMessageId = 0
@@ -195,7 +199,6 @@ internal class InternalClientImpl(
 					true
 				}
 				ProtocolFlag.PING             -> {
-					delegate.send(ProtocolFlag.PING)
 					true
 				}
 				else                          ->
@@ -223,8 +226,13 @@ internal class InternalClientImpl(
 				logger.trace { "Receive message $inputMessageId" }
 				lastReceivedMessageId = inputMessageId
 				lastReceivedMessageIdSend = true
-				handler.handleMessage(frameBuffer)
 				switchToFlag()
+				try {
+					handler.handleMessage(frameBuffer)
+				}
+				catch (t: Throwable) {
+					syncHandleError(t)
+				}
 			}
 		}
 		
@@ -239,15 +247,15 @@ internal class InternalClientImpl(
 		
 		override fun processInputClose(reason: ConnectionCloseReason) {
 			val disconnectReason = when (reason) {
-				ConnectionCloseReason.CONSCIOUS                -> ClientDisconnectReason.CONSCIOUS
+				ConnectionCloseReason.CLOSE                    -> ClientDisconnectReason.CLOSE
 				ConnectionCloseReason.SERVER_SHUTDOWN          -> ClientDisconnectReason.SERVER_SHUTDOWN
 				ConnectionCloseReason.ACTIVITY_TIMEOUT_EXPIRED -> ClientDisconnectReason.CONNECTION_LOST
 				ConnectionCloseReason.CONCURRENT               -> ClientDisconnectReason.CONCURRENT
-				ConnectionCloseReason.PROTOCOL_BROKEN          -> ClientDisconnectReason.SERVER_PROTOCOL_BROKEN
+				ConnectionCloseReason.PROTOCOL_BROKEN          -> ClientDisconnectReason.PROTOCOL_BROKEN
 				ConnectionCloseReason.SERVER_ERROR             -> ClientDisconnectReason.SERVER_ERROR
 				else                                           -> {
 					logger.error("Unexpected close reason $reason")
-					ClientDisconnectReason.CLIENT_PROTOCOL_BROKEN
+					ClientDisconnectReason.PROTOCOL_BROKEN
 				}
 			}
 			
@@ -255,45 +263,58 @@ internal class InternalClientImpl(
 		}
 		
 		override fun processDisconnect(reason: ClientDisconnectReason) {
+			activeChecker.cancel()
 			handler.handleDisconnect(reason)
 		}
 		
 		override fun processLoss() {
 			activeChecker.cancel()
-			delegate = FakeConnectionDelegate()
-			val recoveryProcessor = RecoveryProcessor(handler)
+			delegate = DummyConnectionDelegate()
+			
+			val recoveryHandler = handler.handleConnectionLost()
+			val recoveryProcessor = RecoveryProcessor(handler, recoveryHandler)
 			
 			syncSetProcessor(recoveryProcessor)
 			connectionProducer.produceConnection(recoveryProcessor)
 		}
 		
 		private fun checkActivity() {
-			worker.executeOnLive {
-				if (active) {
-					active = false
-					delegate.send(ProtocolFlag.PING)
-				}
-				else {
-					delegate.terminate()
-					processLoss()
+			worker.execute {
+				if (worker.alive) {
+					if (active) {
+						active = false
+						delegate.send(ProtocolFlag.PING)
+					}
+					else {
+						delegate.terminate()
+						processLoss()
+					}
 				}
 			}
 		}
 	}
 	
-	private inner class RecoveryProcessor(private val handler: ClientHandler) : AbstractInputProcessor(), InternalClientProcessor, ConnectionAcceptor {
-		private val timeout = executor.schedule(activityTimeoutSeconds * 1000, ::fail)
+	private inner class RecoveryProcessor(
+		private val handler: ClientHandler,
+		private val recoveryHandler: ConnectionRecoveryHandler
+	) : AbstractInputProcessor(), InternalClientProcessor, ConnectionAcceptor {
+		private val timeout = executor.schedule(activityTimeoutMillis, ::fail)
 		
 		override fun acceptSuccess(connection: Connection): ConnectionHandler {
 			val d = ConnectionDelegateImpl(executor, connection, this@InternalClientImpl)
 			
-			worker.executeOnLive {
-				delegate = d
-				delegate.send(ByteArray(1 + 16 + 4).also {
-					it[0] = ProtocolFlag.RECOVERY
-					sessionId.copyInto(it, 1)
-					it.putInt(17, lastReceivedMessageId)
-				})
+			worker.execute {
+				if (worker.alive) {
+					delegate = d
+					delegate.send(ByteArray(1 + 16 + 4).also {
+						it[0] = ProtocolFlag.RECOVERY
+						sessionId.copyInto(it, 1)
+						it.putInt(17, lastReceivedMessageId)
+					})
+				}
+				else {
+					d.close()
+				}
 			}
 			
 			return d
@@ -318,10 +339,13 @@ internal class InternalClientImpl(
 				sessionId = buffer.readToArray(16)
 				
 				val messageId = buffer.readInt()
-				outgoingMessages.clearTo(messageId)
 				
 				syncSetProcessor(MessagingProcessor(handler))
+				
+				outgoingMessages.clearTo(messageId)
 				outgoingMessages.forEach(::syncSendMessage)
+				
+				recoveryHandler.handleConnectionRecovered()
 				
 				switchToFlag()
 			}
@@ -330,15 +354,15 @@ internal class InternalClientImpl(
 		override fun processInputClose(reason: ConnectionCloseReason) {
 			val disconnectReason = when (reason) {
 				ConnectionCloseReason.RECOVERY_REJECT          -> ClientDisconnectReason.CONNECTION_LOST
-				ConnectionCloseReason.CONSCIOUS                -> ClientDisconnectReason.CONSCIOUS
+				ConnectionCloseReason.CLOSE                    -> ClientDisconnectReason.CLOSE
 				ConnectionCloseReason.SERVER_SHUTDOWN          -> ClientDisconnectReason.SERVER_SHUTDOWN
 				ConnectionCloseReason.ACTIVITY_TIMEOUT_EXPIRED -> ClientDisconnectReason.CONNECTION_LOST
 				ConnectionCloseReason.CONCURRENT               -> ClientDisconnectReason.CONNECTION_LOST
-				ConnectionCloseReason.PROTOCOL_BROKEN          -> ClientDisconnectReason.SERVER_PROTOCOL_BROKEN
+				ConnectionCloseReason.PROTOCOL_BROKEN          -> ClientDisconnectReason.PROTOCOL_BROKEN
 				ConnectionCloseReason.SERVER_ERROR             -> ClientDisconnectReason.SERVER_ERROR
 				else                                           -> {
 					logger.error("Unexpected close reason $reason")
-					ClientDisconnectReason.CLIENT_PROTOCOL_BROKEN
+					ClientDisconnectReason.PROTOCOL_BROKEN
 				}
 			}
 			
@@ -355,9 +379,11 @@ internal class InternalClientImpl(
 		
 		private fun fail() {
 			timeout.cancel()
-			worker.executeOnLive {
-				delegate.terminate()
-				syncDisconnect(ClientDisconnectReason.CONNECTION_LOST)
+			worker.execute {
+				if (worker.alive) {
+					delegate.terminate()
+					syncDisconnect(ClientDisconnectReason.CONNECTION_LOST)
+				}
 			}
 		}
 	}

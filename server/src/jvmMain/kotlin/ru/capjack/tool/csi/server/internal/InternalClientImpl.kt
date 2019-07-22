@@ -12,17 +12,17 @@ import ru.capjack.tool.io.FramedInputByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.putInt
 import ru.capjack.tool.io.readToArray
-import ru.capjack.tool.lang.alsoElse
 import ru.capjack.tool.lang.alsoIf
 import ru.capjack.tool.lang.make
 import ru.capjack.tool.lang.toHexString
+import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
 import ru.capjack.tool.logging.warn
 import ru.capjack.tool.logging.wrap
 import ru.capjack.tool.utils.concurrency.LivingWorker
 import ru.capjack.tool.utils.concurrency.ScheduledExecutor
-import ru.capjack.tool.utils.concurrency.accessOnLive
+import ru.capjack.tool.utils.concurrency.accessOrExecuteOnLive
 import ru.capjack.tool.utils.concurrency.executeOnLive
 import ru.capjack.tool.utils.concurrency.withCapture
 import kotlin.random.Random
@@ -31,14 +31,14 @@ internal class InternalClientImpl(
 	override val id: Long,
 	private var delegate: ConnectionDelegate,
 	private val executor: ScheduledExecutor,
-	private val activityTimeoutMilliseconds: Int
+	private val activityTimeoutMillis: Int
 ) : InternalClient, ConnectionProcessor {
 	
-	private val logger = ownLogger.wrap { "[$id ${worker.alive.make("live", "dead")}] $it" }
+	private val logger: Logger = ownLogger.wrap { "[$id-${worker.alive.make("${delegate.connectionId}", "dead")}] $it" }
+	private val worker = LivingWorker(executor, ::syncHandleError)
 	
 	@Volatile
 	private var sessionKey = 0L
-	private val worker = LivingWorker(executor)
 	
 	private val disconnectHandlers = mutableListOf<ClientDisconnectHandler>()
 	private var processor: InternalClientProcessor = AcceptationProcessor()
@@ -51,7 +51,6 @@ internal class InternalClientImpl(
 	
 	init {
 		updateSessionKey()
-		syncSetProcessor(processor)
 	}
 	
 	override fun checkSessionKey(value: Long): Boolean {
@@ -69,7 +68,7 @@ internal class InternalClientImpl(
 				writeByte(ProtocolFlag.AUTHORIZATION)
 				writeLong(id)
 				writeLong(sessionKey)
-				writeInt(activityTimeoutMilliseconds)
+				writeInt(activityTimeoutMillis)
 			})
 		}
 	}
@@ -83,9 +82,10 @@ internal class InternalClientImpl(
 					this.delegate = delegate
 					it.close(ConnectionCloseReason.CONCURRENT)
 				}
-				processor.processRecovery()
 				
-				outgoingMessages.clearTo(lastSentMessageId)
+				logger.trace { "Recovery, resend messages after $lastSentMessageId" }
+				
+				processor.processRecovery()
 				
 				updateSessionKey()
 				
@@ -96,7 +96,10 @@ internal class InternalClientImpl(
 					writeInt(lastReceivedMessageId)
 				})
 				
+				outgoingMessages.clearTo(lastSentMessageId)
 				outgoingMessages.forEach(::syncSendMessage)
+				
+				delegate.setProcessor(this)
 			}
 			else {
 				delegate.close(ConnectionCloseReason.RECOVERY_REJECT)
@@ -105,25 +108,26 @@ internal class InternalClientImpl(
 	}
 	
 	override fun disconnectOfConcurrent() {
-		logger.trace { "Disconnect of concurrent" }
+		logger.trace { "Schedule disconnect of concurrent" }
 		worker.executeOnLive {
 			delegate.close(ConnectionCloseReason.CONCURRENT)
 		}
 	}
 	
 	override fun disconnect() {
-		logger.trace { "Disconnect" }
-		worker.executeOnLive {
+		logger.trace { "Schedule disconnect" }
+		
+		worker.accessOrExecuteOnLive {
 			val d = delegate
 			syncSendLastReceivedMessageId()
 			syncDisconnect()
 			
-			d.close(ConnectionCloseReason.CONSCIOUS)
+			d.close(ConnectionCloseReason.CLOSE)
 		}
 	}
 	
 	override fun processInput(delegate: ConnectionDelegate, buffer: FramedInputByteBuffer): Boolean {
-		logger.trace { "Try process input ${buffer.readableSize} bytes" }
+		logger.trace { "Try process input ${buffer.readableSize}B" }
 		
 		worker.withCapture {
 			while (worker.alive && buffer.readable) {
@@ -131,64 +135,68 @@ internal class InternalClientImpl(
 					return false
 				}
 			}
-			syncSendLastReceivedMessageId()
+			if (worker.alive) {
+				syncSendLastReceivedMessageId()
+			}
 		}
 		return true
 	}
 	
 	override fun processClose(delegate: ConnectionDelegate, loss: Boolean) {
-		logger.trace { "Process connection close (${loss.make("lost", "intent")})" }
+		logger.trace { "Process connection close${loss.make(" (lost)", "")}" }
 		
-		if (!loss && worker.accessible && worker.alive && this.delegate == delegate) {
-			syncDisconnect()
-		}
-		else {
-			worker.executeOnLive {
-				if (this.delegate == delegate) {
-					if (loss) {
-						processor.processLoss()
-					}
-					else {
-						syncDisconnect()
+		if (worker.alive) {
+			if (!loss && worker.accessible && this.delegate == delegate) {
+				syncDisconnect()
+			}
+			else {
+				worker.execute {
+					if (worker.alive) {
+						if (this.delegate == delegate) {
+							if (loss) {
+								processor.processLoss()
+							}
+							else {
+								syncDisconnect()
+							}
+						}
 					}
 				}
 			}
 		}
+		
 	}
 	
 	override fun sendMessage(data: Byte) {
-		logger.trace { "Schedule send message of 1 bytes" }
+		logger.trace { "Schedule send message 1B" }
 		
-		worker.accessOnLive {
+		worker.accessOrExecuteOnLive {
 			syncSendMessage(outgoingMessages.add(data))
-		} alsoElse {
-			worker.executeOnLive {
-				syncSendMessage(outgoingMessages.add(data))
-			}
 		}
 	}
 	
 	override fun sendMessage(data: ByteArray) {
-		logger.trace { "Schedule send message of ${data.size} bytes" }
+		logger.trace { "Schedule send message ${data.size}B" }
 		
-		worker.accessOnLive {
+		worker.accessOrExecuteOnLive {
 			syncSendMessage(outgoingMessages.add(data))
-		} alsoElse {
-			worker.executeOnLive {
-				syncSendMessage(outgoingMessages.add(data))
-			}
 		}
 	}
 	
 	override fun sendMessage(data: InputByteBuffer) {
-		logger.trace { "Schedule send message of ${data.readableSize} bytes" }
+		logger.trace { "Schedule send message ${data.readableSize}B" }
 		
-		worker.accessOnLive {
-			syncSendMessage(outgoingMessages.add(data))
-		} alsoElse {
-			data.readToArray().also { bytes ->
-				worker.executeOnLive {
-					syncSendMessage(outgoingMessages.add(bytes))
+		if (worker.alive) {
+			if (worker.accessible) {
+				syncSendMessage(outgoingMessages.add(data))
+			}
+			else {
+				data.readToArray().also { bytes ->
+					worker.execute {
+						if (worker.alive) {
+							syncSendMessage(outgoingMessages.add(bytes))
+						}
+					}
 				}
 			}
 		}
@@ -229,8 +237,8 @@ internal class InternalClientImpl(
 		
 		worker.die()
 		
-		delegate = FakeConnectionDelegate
-		syncSetProcessor(FakeInternalClientProcessor)
+		syncSetProcessor(NothingInternalClientProcessor)
+		delegate = NothingConnectionDelegate
 		
 		disconnectHandlers.forEach { it.handleClientDisconnect(this) }
 		disconnectHandlers.clear()
@@ -238,15 +246,21 @@ internal class InternalClientImpl(
 	}
 	
 	private fun syncSetProcessor(processor: InternalClientProcessor) {
-		logger.trace { "Use processor ${processor::class.simpleName}" }
+		logger.trace { "Use processor ${processor.javaClass.simpleName}" }
 		this.processor = processor
+	}
+	
+	private fun syncHandleError(t: Throwable) {
+		logger.error("Uncaught exception", t)
+		delegate.close(ConnectionCloseReason.SERVER_ERROR)
 	}
 	
 	///
 	
 	private inner class AcceptationProcessor : InternalClientProcessor {
 		override fun processInput(delegate: ConnectionDelegate, buffer: FramedInputByteBuffer): Boolean {
-			throw UnsupportedOperationException()
+			delegate.close(ConnectionCloseReason.PROTOCOL_BROKEN)
+			return false
 		}
 		
 		override fun processLoss() {
@@ -280,8 +294,8 @@ internal class InternalClientImpl(
 		}
 		
 		override fun processLoss() {
-			delegate = FakeConnectionDelegate
 			syncSetProcessor(RecoveryProcessor(receiver))
+			delegate = DummyConnectionDelegate
 		}
 		
 		override fun processRecovery() {
@@ -303,15 +317,12 @@ internal class InternalClientImpl(
 					true
 				}
 				ProtocolFlag.CLOSE            -> {
-					delegate.terminate()
-					syncDisconnect()
+					delegate.close()
 					false
 				}
 				else                          -> {
-					logger.warn { "Invalid messaging flag ${flag.toHexString()}" }
-					val d = delegate
-					syncDisconnect()
-					d.close(ConnectionCloseReason.PROTOCOL_BROKEN)
+					logger.warn { "Invalid messaging flag 0x${flag.toHexString()}" }
+					delegate.close(ConnectionCloseReason.PROTOCOL_BROKEN)
 					false
 				}
 			}
@@ -330,7 +341,12 @@ internal class InternalClientImpl(
 				lastReceivedMessageId = inputMessageId
 				lastReceivedMessageIdSend = true
 				inputState = MessagingInputState.FLAG
-				receiver.receiveMessage(frameBuffer)
+				try {
+					receiver.receiveMessage(frameBuffer)
+				}
+				catch (t: Throwable) {
+					syncHandleError(t)
+				}
 			}
 		}
 		
@@ -346,10 +362,11 @@ internal class InternalClientImpl(
 	
 	private inner class RecoveryProcessor(private val receiver: ClientMessageReceiver) : InternalClientProcessor {
 		
-		private val timeout = executor.schedule(activityTimeoutMilliseconds, ::disconnect)
+		private val timeout = executor.schedule(activityTimeoutMillis, ::disconnect)
 		
 		override fun processInput(delegate: ConnectionDelegate, buffer: FramedInputByteBuffer): Boolean {
-			throw UnsupportedOperationException()
+			delegate.close(ConnectionCloseReason.PROTOCOL_BROKEN)
+			return false
 		}
 		
 		override fun processLoss() {

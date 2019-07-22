@@ -3,6 +3,8 @@ package ru.capjack.tool.csi.client.internal
 import ru.capjack.tool.io.InputByteBuffer
 
 internal interface ConnectionDelegate {
+	val connectionId: Any
+	
 	fun setProcessor(processor: ConnectionProcessor)
 	
 	fun send(data: Byte)

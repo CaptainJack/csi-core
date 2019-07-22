@@ -20,7 +20,7 @@ internal abstract class AbstractInputProcessor : InputProcessor {
 	
 	protected open fun processInputFlag(delegate: ConnectionDelegate, flag: Byte): Boolean {
 		val reason = when (flag) {
-			ProtocolFlag.CLOSE                          -> ConnectionCloseReason.CONSCIOUS
+			ProtocolFlag.CLOSE                          -> ConnectionCloseReason.CLOSE
 			ProtocolFlag.CLOSE_CONCURRENT               -> ConnectionCloseReason.CONCURRENT
 			ProtocolFlag.CLOSE_SERVER_SHUTDOWN          -> ConnectionCloseReason.SERVER_SHUTDOWN
 			ProtocolFlag.CLOSE_ACTIVITY_TIMEOUT_EXPIRED -> ConnectionCloseReason.ACTIVITY_TIMEOUT_EXPIRED

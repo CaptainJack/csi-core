@@ -5,6 +5,6 @@ include(
 )
 
 rootProject.name = "tool-csi"
-rootProject.children.forEach {
-	it.name = "tool-csi-${it.name}"
-}
+rootProject.children.forEach { it.name = "tool-csi-${it.name}" }
+
+enableFeaturePreview("GRADLE_METADATA")

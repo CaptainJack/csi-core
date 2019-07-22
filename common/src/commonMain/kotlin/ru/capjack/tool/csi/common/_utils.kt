@@ -1,5 +1,6 @@
 package ru.capjack.tool.csi.common
 
+import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.readToArray
 import ru.capjack.tool.lang.toHexString
@@ -29,7 +30,7 @@ fun formatLoggerMessageBytes(prefix: String, data: ByteArray): String {
 	return string.toString()
 }
 
-fun formatLoggerMessageBytes(prefix: String, data: InputByteBuffer): String {
+fun formatLoggerMessageBytes(prefix: String, data: ByteBuffer): String {
 	val size = data.readableSize
 	val string = formatLoggerMessageBytes(prefix, data.readToArray())
 	data.rollbackRead(size)

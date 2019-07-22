@@ -4,7 +4,7 @@ import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 
 class OutgoingMessageBuffer(
-	private var nextMessageId: Int = 0
+	private var nextMessageId: Int = 1
 ) : Iterable<OutgoingMessage> {
 	
 	private val cache = ArrayList<Message>()
@@ -23,7 +23,7 @@ class OutgoingMessageBuffer(
 			
 			override fun next(): OutgoingMessage {
 				return message!!.also {
-					it.data.reset()
+					it.data.rollbackRead()
 					message = it.next
 				}
 			}
@@ -34,7 +34,6 @@ class OutgoingMessageBuffer(
 		return provideMessage().also {
 			it.data.writeInt(1)
 			it.data.writeByte(data)
-			it.data.commit()
 		}
 	}
 	
@@ -42,7 +41,6 @@ class OutgoingMessageBuffer(
 		return provideMessage().also {
 			it.data.writeInt(data.size)
 			it.data.writeArray(data)
-			it.data.commit()
 		}
 	}
 	
@@ -50,7 +48,6 @@ class OutgoingMessageBuffer(
 		return provideMessage().also {
 			it.data.writeInt(data.readableSize)
 			it.data.writeBuffer(data)
-			it.data.commit()
 		}
 	}
 	
@@ -90,6 +87,9 @@ class OutgoingMessageBuffer(
 			else cache.removeAt(cache.lastIndex)
 		
 		message.id = nextMessageId++
+		if (message.id == 0) {
+			message.id = nextMessageId++
+		}
 		
 		if (head == null) {
 			head = message
@@ -107,7 +107,7 @@ class OutgoingMessageBuffer(
 		var prev: Message? = null
 		var next: Message? = null
 		
-		override val data = MessageData()
+		override val data = ByteBuffer()
 		
 		override var id: Int = 0
 			set(value) {
@@ -115,17 +115,5 @@ class OutgoingMessageBuffer(
 				data.writeByte(ProtocolFlag.MESSAGE)
 				data.writeInt(id)
 			}
-	}
-	
-	private class MessageData : ByteBuffer() {
-		private var size: Int = 0
-		
-		fun commit() {
-			size = readableSize
-		}
-		
-		fun reset() {
-			rollbackRead(size)
-		}
 	}
 }

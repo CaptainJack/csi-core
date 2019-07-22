@@ -7,5 +7,5 @@ interface ClientHandler {
 	
 	fun handleDisconnect(reason: ClientDisconnectReason)
 	
-	fun handleConnectionLoss(): ConnectionRecoveryHandler
+	fun handleConnectionLost(): ConnectionRecoveryHandler
 }

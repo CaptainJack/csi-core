@@ -1,16 +1,19 @@
 package ru.capjack.tool.csi.server
 
+import ru.capjack.tool.csi.common.Connection
 import ru.capjack.tool.csi.common.ConnectionCloseReason
+import ru.capjack.tool.csi.common.ConnectionHandler
 import ru.capjack.tool.csi.common.ProtocolFlag
 import ru.capjack.tool.csi.server.internal.*
 import ru.capjack.tool.io.putInt
+import ru.capjack.tool.lang.make
+import ru.capjack.tool.lang.waitIfImmediately
 import ru.capjack.tool.logging.debug
 import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
 import ru.capjack.tool.logging.warn
 import ru.capjack.tool.utils.Closeable
 import ru.capjack.tool.utils.concurrency.ScheduledExecutor
-import ru.capjack.tool.utils.wait
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -19,7 +22,8 @@ class Server(
 	private val clientAuthorizer: ClientAuthorizer,
 	private val clientAcceptor: ClientAcceptor,
 	gateway: ConnectionGateway,
-	private val connectionActivityTimeoutMilliseconds: Int
+	private val connectionActivityTimeoutMillis: Int,
+	private val stopShutdownTimeoutMillis: Int
 ) {
 	val statistic: ServerStatistic = Statistic()
 	
@@ -33,12 +37,16 @@ class Server(
 	private var runningLock = Any()
 	
 	init {
+		require(connectionActivityTimeoutMillis > 0)
+		require(stopShutdownTimeoutMillis >= 0)
+		
 		logger.debug("Starting")
-		gate = gateway.openGate(connections)
+		gate = gateway.open(connections)
 		logger.debug("Started")
 	}
 	
-	fun stop(timeoutSeconds: Int) {
+	fun stop() {
+		
 		synchronized(runningLock) {
 			if (!running) {
 				return
@@ -48,7 +56,7 @@ class Server(
 		
 		logger.debug("Stopping")
 		
-		connections.stop(timeoutSeconds)
+		connections.stop(stopShutdownTimeoutMillis)
 		gate.close()
 		
 		logger.debug("Stopped")
@@ -56,8 +64,7 @@ class Server(
 	
 	private inner class Connections : ConnectionAcceptor, ConnectionReleaser, ReceptionConnectionProcessorHeir {
 		val size = AtomicInteger()
-		
-		private val connections = ConcurrentHashMap.newKeySet<ConnectionDelegate>()
+		private val delegates = ConcurrentHashMap.newKeySet<ConnectionDelegate>()
 		private val receptionConnectionProcessor = ReceptionConnectionProcessor(this)
 		private val authorizationConnectionProcessor = AuthorizationConnectionProcessor(clientAuthorizer, clients)
 		private val recoveryConnectionProcessor = RecoveryConnectionProcessor(clients)
@@ -76,10 +83,9 @@ class Server(
 			synchronized(runningLock) {
 				if (running) {
 					size.getAndIncrement()
-					val internalConnection =
-						ConnectionDelegateImpl(connection, this, receptionConnectionProcessor, executor, connectionActivityTimeoutMilliseconds)
-					connections.add(internalConnection)
-					return internalConnection
+					val delegate = ConnectionDelegateImpl(connection, this, receptionConnectionProcessor, executor, connectionActivityTimeoutMillis)
+					delegates.add(delegate)
+					return delegate
 				}
 			}
 			
@@ -87,47 +93,46 @@ class Server(
 			connection.send(ProtocolFlag.CLOSE_SERVER_SHUTDOWN)
 			connection.close()
 			
-			return FakeConnectionHandler
+			return DummyConnectionHandler
 		}
 		
 		override fun releaseConnection(delegate: ConnectionDelegate) {
 			logger.trace { "Release connection ${delegate.connectionId}" }
 			size.getAndDecrement()
-			connections.remove(delegate)
+			delegates.remove(delegate)
 		}
 		
-		fun stop(timeoutSeconds: Int) {
+		fun stop(timeoutMilliseconds: Int) {
 			var s = size.get()
 			if (s != 0) {
-				var timeoutMs = timeoutSeconds * 1000L
 				
-				logger.debug { "Server has $s connections, shutdown after $timeoutMs milliseconds" }
+				var timeoutMs: Long
 				
-				val message = ByteArray(5)
-				message[0] = ProtocolFlag.SERVER_SHUTDOWN_TIMEOUT
-				message.putInt(1, timeoutSeconds)
-				connections.forEach { it.send(message) }
-				
-				Thread.sleep(timeoutMs)
+				if (timeoutMilliseconds != 0) {
+					timeoutMs = timeoutMilliseconds.toLong()
+					
+					logger.debug { "Server has $s connections, shutdown after $timeoutMs milliseconds" }
+					
+					val message = ByteArray(5)
+					message[0] = ProtocolFlag.SERVER_SHUTDOWN_TIMEOUT
+					message.putInt(1, timeoutMilliseconds)
+					delegates.forEach { it.send(message) }
+					
+					Thread.sleep(timeoutMs)
+				}
 				
 				s = size.get()
 				
 				if (s != 0) {
-					timeoutMs = s * 200L
+					timeoutMs = (s * 200L).coerceAtMost(10L * 60 * 1000)
 					logger.debug { "Expect all connections to be closed within $timeoutMs milliseconds" }
 					
-					connections.forEach { it.close(ConnectionCloseReason.SERVER_SHUTDOWN) }
+					delegates.forEach { it.close(ConnectionCloseReason.SERVER_SHUTDOWN) }
 					
-					if (wait(timeoutMs) { size.get() != 0 }) {
-						s = size.get()
-						timeoutMs = s * 100L
-						logger.debug { "Exist $s opened connections, waiting additional $timeoutMs milliseconds" }
-						
-						if (wait(timeoutMs) { size.get() != 0 }) {
-							logger.warn { "Failed to close $size connections, ignore them" }
-							size.set(0)
-							connections.clear()
-						}
+					if (waitIfImmediately(timeoutMs) { size.get() != 0 }) {
+						logger.warn { "Failed to close $size connections, ignore them" }
+						size.set(0)
+						delegates.clear()
 					}
 				}
 			}
@@ -144,22 +149,24 @@ class Server(
 			
 			size.getAndIncrement()
 			
-			val client = InternalClientImpl(clientId, delegate, executor, connectionActivityTimeoutMilliseconds)
+			val client = InternalClientImpl(clientId, delegate, executor, connectionActivityTimeoutMillis)
 			client.addDisconnectHandler(this)
 			clients.compute(clientId, AuthorizationFinalizer(client, clientAcceptor))
 			return client
 		}
 		
 		override fun acceptRecovery(clientId: Long, sessionKey: Long): InternalClient? {
-			return clients[clientId]?.takeIf { it.checkSessionKey(sessionKey) }
+			return clients[clientId]?.takeIf {
+				it.checkSessionKey(sessionKey)
+			}
 		}
 		
 		override fun handleClientDisconnect(client: Client) {
-			logger.trace { "Release client ${client.id}" }
-			
 			size.getAndDecrement()
 			
-			clients.remove(client.id, client)
+			val removed = clients.remove(client.id, client)
+			
+			logger.trace { "${removed.make("Release", "Forget")} client ${client.id}" }
 		}
 	}
 	

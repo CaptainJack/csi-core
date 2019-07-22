@@ -2,7 +2,6 @@ package ru.capjack.tool.csi.server.internal
 
 import ru.capjack.tool.csi.common.ConnectionCloseReason
 import ru.capjack.tool.io.FramedInputByteBuffer
-import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.lang.lefIf
 
 internal class RecoveryConnectionProcessor(
@@ -17,6 +16,7 @@ internal class RecoveryConnectionProcessor(
 				false
 			}
 			else {
+				delegate.setProcessor(TransitionConnectionProcessor)
 				client.recovery(delegate, buffer.readInt())
 				true
 			}

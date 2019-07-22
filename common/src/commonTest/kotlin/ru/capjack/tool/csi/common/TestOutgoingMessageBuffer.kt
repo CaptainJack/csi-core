@@ -42,7 +42,7 @@ class TestOutgoingMessageBuffer {
 		val id2 = buffer.add(0).id
 		
 		assertEquals(-1, id1)
-		assertEquals(0, id2)
+		assertEquals(1, id2)
 	}
 	
 	@Test
