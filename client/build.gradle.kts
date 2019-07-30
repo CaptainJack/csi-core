@@ -17,7 +17,7 @@ kotlin {
 			implementation("ru.capjack.tool:tool-lang:0.5.0")
 			implementation("ru.capjack.tool:tool-logging:0.14.0")
 			
-			api(project(":tool-csi-common"))
+			api(project(":tool-csi-core-common"))
 		}
 		get("commonTest").dependencies {
 			implementation(kotlin("test-common"))
