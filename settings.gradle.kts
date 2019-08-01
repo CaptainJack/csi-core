@@ -4,7 +4,7 @@ include(
 	"server"
 )
 
-rootProject.name = "tool-csi-core"
+rootProject.name = "csi-core"
 rootProject.children.forEach { it.name = "${rootProject.name}-${it.name}" }
 
 enableFeaturePreview("GRADLE_METADATA")

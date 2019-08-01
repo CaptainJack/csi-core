@@ -1,29 +1,27 @@
 plugins {
 	kotlin("multiplatform")
 	id("ru.capjack.bintray")
+	id("ru.capjack.logging")
 	jacoco
 }
 
 kotlin {
-	jvm {
-		compilations.all { kotlinOptions.jvmTarget = "1.8" }
-	}
-	js {
-	}
+	jvm()
+	js()
 	
 	sourceSets {
 		get("commonMain").dependencies {
 			implementation(kotlin("stdlib-common"))
-			implementation("ru.capjack.tool:tool-lang:0.5.0")
-			implementation("ru.capjack.tool:tool-logging:0.14.0")
+			implementation("ru.capjack.tool:tool-lang")
+			implementation("ru.capjack.tool:tool-utils")
+			implementation("ru.capjack.tool:tool-logging")
 			
-			api(project(":tool-csi-core-common"))
+			api(project(":csi-core-common"))
 		}
 		get("commonTest").dependencies {
 			implementation(kotlin("test-common"))
 			implementation(kotlin("test-annotations-common"))
 		}
-		
 		
 		get("jvmMain").dependencies {
 			implementation(kotlin("reflect"))
@@ -31,9 +29,8 @@ kotlin {
 		}
 		get("jvmTest").dependencies {
 			implementation(kotlin("test-junit"))
-			implementation("ch.qos.logback:logback-classic:1.2.3")
+			implementation("ch.qos.logback:logback-classic")
 		}
-		
 		
 		get("jsMain").dependencies {
 			implementation(kotlin("stdlib-js"))
