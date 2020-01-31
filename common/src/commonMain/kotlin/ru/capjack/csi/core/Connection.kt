@@ -3,13 +3,15 @@ package ru.capjack.csi.core
 import ru.capjack.tool.io.InputByteBuffer
 
 interface Connection {
-	val id: Any
+	val id: Long
 	
-	fun send(data: Byte)
+	fun sendMessage(data: Byte)
 	
-	fun send(data: ByteArray)
+	fun sendMessage(data: ByteArray)
 	
-	fun send(data: InputByteBuffer)
+	fun sendMessage(data: InputByteBuffer)
 	
 	fun close()
+	
+	fun close(handler: () -> Unit)
 }

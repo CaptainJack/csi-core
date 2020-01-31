@@ -14,8 +14,8 @@ kotlin {
 			implementation(kotlin("stdlib-common"))
 			implementation("ru.capjack.tool:tool-lang")
 			implementation("ru.capjack.tool:tool-utils")
+			implementation("ru.capjack.tool:tool-io")
 			implementation("ru.capjack.tool:tool-logging")
-			
 			api(project(":csi-core-common"))
 		}
 		get("commonTest").dependencies {
@@ -38,19 +38,19 @@ kotlin {
 	}
 }
 
+jacoco {
+	toolVersion = "0.8.5"
+}
+
 tasks.register<JacocoReport>("jvmTestCodeCoverageReport") {
 	dependsOn(tasks["jvmTest"])
 	executionData(tasks["jvmTest"])
-	classDirectories.setFrom("build/classes/kotlin/jvm/main")
+	
+	classDirectories.setFrom(
+		"build/classes/kotlin/jvm/main"
+	)
 	sourceDirectories.setFrom(
 		"src/commonMain/kotlin",
 		"src/jvmMain/kotlin"
 	)
-}
-
-tasks.create<Copy>("jvmTestCopyResources") {
-	//TODO https://youtrack.jetbrains.com/issue/KT-24463
-	dependsOn("jvmTestProcessResources")
-	from("build/processedResources/")
-	into("build/classes/kotlin")
 }

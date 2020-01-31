@@ -1,6 +1,7 @@
 plugins {
 	kotlin("multiplatform")
 	id("ru.capjack.bintray")
+	id("ru.capjack.logging")
 }
 
 kotlin {
@@ -11,8 +12,9 @@ kotlin {
 		get("commonMain").dependencies {
 			implementation(kotlin("stdlib-common"))
 			implementation("ru.capjack.tool:tool-lang")
-			
-			api("ru.capjack.tool:tool-io")
+			implementation("ru.capjack.tool:tool-io")
+			implementation("ru.capjack.tool:tool-utils")
+			implementation("ru.capjack.tool:tool-logging")
 		}
 		get("commonTest").dependencies {
 			implementation(kotlin("test-common"))

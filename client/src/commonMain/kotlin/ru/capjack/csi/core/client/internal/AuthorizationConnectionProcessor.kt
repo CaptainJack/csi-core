@@ -1,70 +1,41 @@
 package ru.capjack.csi.core.client.internal
 
-import ru.capjack.csi.core.client.ClientAcceptor
-import ru.capjack.csi.core.client.ConnectFailReason
-import ru.capjack.csi.core.client.ConnectionProducer
-import ru.capjack.csi.core.ConnectionCloseReason
-import ru.capjack.csi.core.ProtocolFlag
+import ru.capjack.csi.core.client.ChannelGate
+import ru.capjack.csi.core.client.ConnectionAcceptor
+import ru.capjack.csi.core.Channel
+import ru.capjack.csi.core.Connection
+import ru.capjack.csi.core.ProtocolBrokenException
+import ru.capjack.csi.core.common.ConnectionProcessor
+import ru.capjack.csi.core.common.InternalConnection
+import ru.capjack.csi.core.common.Messages
 import ru.capjack.tool.io.FramedInputByteBuffer
-import ru.capjack.tool.io.readToArray
-import ru.capjack.tool.lang.alsoIf
-import ru.capjack.tool.logging.ownLogger
-import ru.capjack.tool.utils.concurrency.ScheduledExecutor
+import ru.capjack.tool.utils.concurrency.DelayableAssistant
 
 internal class AuthorizationConnectionProcessor(
-	private val executor: ScheduledExecutor,
-	private val connectionProducer: ConnectionProducer,
-	private val acceptor: ClientAcceptor
-) : AbstractInputProcessor(), ConnectionProcessor {
-	
-	override fun processInputFlag(delegate: ConnectionDelegate, flag: Byte): Boolean {
-		return if (flag == ProtocolFlag.AUTHORIZATION) {
-			switchToBody()
-			true
-		}
-		else super.processInputFlag(delegate, flag)
+	private val assistant: DelayableAssistant,
+	private val activityTimeoutSeconds: Int,
+	private val acceptor: ConnectionAcceptor,
+	private val channelGate: ChannelGate
+) : ConnectionProcessor {
+	override fun processConnectionAccept(channel: Channel, connection: Connection, messages: Messages): ConnectionProcessor {
+		val handler = acceptor.acceptConnection(connection)
+		return ClientMessagingConnectionProcessor(handler, messages, assistant, activityTimeoutSeconds, channelGate, channel)
 	}
 	
-	override fun processInputBody(delegate: ConnectionDelegate, buffer: FramedInputByteBuffer): Boolean {
-		return buffer.isReadable(16 + 4).alsoIf {
-			val client = InternalClientImpl(
-				executor,
-				connectionProducer,
-				delegate,
-				buffer.readToArray(16),
-				buffer.readInt()
-			)
-			
-			delegate.setProcessor(client)
-			client.accept(acceptor)
-			
-			switchToFlag()
-		}
+	override fun processConnectionRecovery(channel: Channel, lastSentMessageId: Int): ConnectionProcessor {
+		throw UnsupportedOperationException()
 	}
 	
-	override fun processInputClose(reason: ConnectionCloseReason) {
-		val failReason = when (reason) {
-			ConnectionCloseReason.AUTHORIZATION_REJECT     -> ConnectFailReason.AUTHORIZATION_REJECTED
-			ConnectionCloseReason.PROTOCOL_BROKEN          -> ConnectFailReason.PROTOCOL_BROKEN
-			ConnectionCloseReason.SERVER_ERROR             -> ConnectFailReason.SERVER_ERROR
-			ConnectionCloseReason.CLOSE                    -> ConnectFailReason.CONNECTION_REFUSED
-			ConnectionCloseReason.SERVER_SHUTDOWN          -> ConnectFailReason.CONNECTION_REFUSED
-			ConnectionCloseReason.ACTIVITY_TIMEOUT_EXPIRED -> ConnectFailReason.CONNECTION_REFUSED
-			ConnectionCloseReason.CONCURRENT               -> ConnectFailReason.CONNECTION_REFUSED
-			else                                           -> {
-				ownLogger.error("Unexpected close reason $reason")
-				ConnectFailReason.PROTOCOL_BROKEN
-			}
-		}
-		
-		fail(failReason)
+	override fun processChannelInput(channel: Channel, buffer: FramedInputByteBuffer): Boolean {
+		throw ProtocolBrokenException()
 	}
 	
-	override fun processLoss(delegate: ConnectionDelegate) {
-		fail(ConnectFailReason.CONNECTION_REFUSED)
+	override fun processChannelClose(connection: InternalConnection): ConnectionProcessor {
+		return this
 	}
 	
-	private fun fail(reason: ConnectFailReason) {
-		acceptor.acceptFail(reason)
+	override fun processConnectionClose() {
+		throw UnsupportedOperationException()
 	}
+	
 }

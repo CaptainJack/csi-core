@@ -1,14 +1,20 @@
 package ru.capjack.csi.core.client
 
-import ru.capjack.tool.io.InputByteBuffer
+import ru.capjack.csi.core.client.internal.AuthorizationChannelAcceptor
+import ru.capjack.csi.core.common.formatLoggerMessageBytes
+import ru.capjack.tool.logging.ownLogger
+import ru.capjack.tool.logging.trace
+import ru.capjack.tool.utils.concurrency.DelayableAssistant
 
-interface Client {
-	fun sendMessage(data: Byte)
-	
-	fun sendMessage(data: ByteArray)
-	
-	fun sendMessage(data: InputByteBuffer)
-	
-	fun disconnect()
+class Client(
+	private val assistant: DelayableAssistant,
+	private val channelGate: ChannelGate,
+	private val version: Int = 0,
+	private val activityTimeoutSeconds: Int = 30
+) {
+	fun connect(authorizationKey: ByteArray, connectionAcceptor: ConnectionAcceptor) {
+		ownLogger.trace { formatLoggerMessageBytes("Connect with authorization key ", authorizationKey) }
+		channelGate.openChannel(AuthorizationChannelAcceptor(assistant, channelGate, version, authorizationKey, connectionAcceptor, activityTimeoutSeconds))
+	}
 }
 

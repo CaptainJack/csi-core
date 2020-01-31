@@ -1,5 +1,7 @@
 package ru.capjack.csi.core
 
+import ru.capjack.csi.core.common.OutgoingMessageBuffer
+import ru.capjack.csi.core.common.ProtocolMarker
 import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.io.readToArray
 import kotlin.test.Test
@@ -57,9 +59,11 @@ class TestOutgoingMessageBuffer {
 		
 		val id1 = buffer.add(0).id
 		val id2 = buffer.add(0).id
+		val id3 = buffer.add(0).id
 		
 		assertEquals(-1, id1)
-		assertEquals(1, id2)
+		assertEquals(0, id2)
+		assertEquals(1, id3)
 	}
 	
 	@Test
@@ -138,7 +142,7 @@ class TestOutgoingMessageBuffer {
 		val bytes = buffer.add(data).data.readToArray().toList()
 		
 		val expected = listOf(
-			ProtocolFlag.MESSAGE,
+			ProtocolMarker.MESSAGING_NEW,
 			0x00, 0x00, 0x00, 0x2A,
 			0x00, 0x00, 0x00, 0x01,
 			0x0F
@@ -155,7 +159,7 @@ class TestOutgoingMessageBuffer {
 		val bytes = buffer.add(data).data.readToArray().toList()
 		
 		val expected = listOf(
-			ProtocolFlag.MESSAGE,
+			ProtocolMarker.MESSAGING_NEW,
 			0x00, 0x00, 0x00, 0x2A,
 			0x00, 0x00, 0x00, 0x02,
 			0x0F, 0x77
@@ -174,7 +178,7 @@ class TestOutgoingMessageBuffer {
 		val bytes = buffer.add(data).data.readToArray().toList()
 		
 		val expected = listOf(
-			ProtocolFlag.MESSAGE,
+			ProtocolMarker.MESSAGING_NEW,
 			0x00, 0x00, 0x00, 0x2A,
 			0x00, 0x00, 0x00, 0x04,
 			0x00, 0x00, 0x28, 0x1A
@@ -195,7 +199,7 @@ class TestOutgoingMessageBuffer {
 		
 		val bytes = m2.data.readToArray().toList()
 		val expected = listOf(
-			ProtocolFlag.MESSAGE,
+			ProtocolMarker.MESSAGING_NEW,
 			0x00, 0x00, 0x00, 0x2B,
 			0x00, 0x00, 0x00, 0x01,
 			0x06
