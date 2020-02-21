@@ -2,7 +2,7 @@ package ru.capjack.csi.core.client
 
 import org.junit.Test
 
-class TestDummyConnectionRecoveryHandler {
+class DummyConnectionRecoveryHandlerTest {
 	@Test
 	fun `Coverage handleConnectionRecovered`() {
 		DummyConnectionRecoveryHandler().handleConnectionRecovered()

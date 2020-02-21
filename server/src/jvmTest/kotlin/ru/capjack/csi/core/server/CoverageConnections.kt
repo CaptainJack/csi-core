@@ -4,10 +4,11 @@ import org.junit.Test
 import ru.capjack.csi.core.common.ChannelProcessor
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.common.NothingInternalChannel
-import ru.capjack.csi.core.server.internal.Connections
 import ru.capjack.csi.core.server._test.FakeDelayableAssistant
+import ru.capjack.csi.core.server._test.GLOBAL_BYTE_BUFFER_POOL
 import ru.capjack.csi.core.server._test.NowDelayableAssistant
 import ru.capjack.csi.core.server._test.TestConnectionAcceptor
+import ru.capjack.csi.core.server.internal.Connections
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.utils.concurrency.ExecutorDelayableAssistant
 import java.util.concurrent.Executors
@@ -19,6 +20,7 @@ class CoverageConnections {
 	fun `Coverage bad activityTimeoutSeconds`() {
 		Connections(
 			FakeDelayableAssistant,
+			GLOBAL_BYTE_BUFFER_POOL,
 			TestConnectionAcceptor(),
 			0,
 			1,
@@ -31,6 +33,7 @@ class CoverageConnections {
 	fun `Coverage bad stopTimeoutSeconds`() {
 		Connections(
 			FakeDelayableAssistant,
+			GLOBAL_BYTE_BUFFER_POOL,
 			TestConnectionAcceptor(),
 			1,
 			0,
@@ -44,6 +47,7 @@ class CoverageConnections {
 		val ids = mutableListOf<Long>(0, 1, 1, 2)
 		val connections = Connections(
 			FakeDelayableAssistant,
+			GLOBAL_BYTE_BUFFER_POOL,
 			TestConnectionAcceptor(),
 			1,
 			1,
@@ -61,6 +65,7 @@ class CoverageConnections {
 	fun `Coverage recovery connection on miss identity`() {
 		val connections = Connections(
 			NowDelayableAssistant,
+			GLOBAL_BYTE_BUFFER_POOL,
 			TestConnectionAcceptor(),
 			1,
 			1,
@@ -94,6 +99,7 @@ class CoverageConnections {
 		var i = 0L
 		val connections = Connections(
 			ExecutorDelayableAssistant(Executors.newSingleThreadScheduledExecutor()),
+			GLOBAL_BYTE_BUFFER_POOL,
 			TestConnectionAcceptor(),
 			1,
 			1,
@@ -147,6 +153,7 @@ class CoverageConnections {
 		var i = 0L
 		val connections = Connections(
 			ExecutorDelayableAssistant(Executors.newSingleThreadScheduledExecutor()),
+			GLOBAL_BYTE_BUFFER_POOL,
 			TestConnectionAcceptor(),
 			1,
 			1,

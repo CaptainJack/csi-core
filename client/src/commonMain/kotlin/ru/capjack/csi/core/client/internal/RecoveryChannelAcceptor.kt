@@ -1,16 +1,19 @@
 package ru.capjack.csi.core.client.internal
 
-import ru.capjack.csi.core.client.ChannelAcceptor
 import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.ChannelHandler
+import ru.capjack.csi.core.client.ChannelAcceptor
 import ru.capjack.csi.core.common.InternalConnection
 import ru.capjack.csi.core.common.ProtocolMarker
+import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.putInt
 import ru.capjack.tool.io.putLong
 import ru.capjack.tool.utils.concurrency.DelayableAssistant
+import ru.capjack.tool.utils.concurrency.ObjectPool
 
 internal class RecoveryChannelAcceptor(
 	private val assistant: DelayableAssistant,
+	private val byteBuffers: ObjectPool<ByteBuffer>,
 	private val connection: InternalConnection,
 	private val activityTimeoutSeconds: Int,
 	private val lastIncomingMessageId: Int
@@ -21,6 +24,7 @@ internal class RecoveryChannelAcceptor(
 			channel,
 			RecoveryChannelProcessor(connection),
 			assistant,
+			byteBuffers,
 			activityTimeoutSeconds
 		)
 		

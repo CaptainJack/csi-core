@@ -3,20 +3,21 @@ package ru.capjack.csi.core.server
 import org.junit.Test
 import ru.capjack.csi.core.common.ChannelProcessor
 import ru.capjack.csi.core.common.InternalChannel
+import ru.capjack.csi.core.server._test.FakeDelayableAssistant
+import ru.capjack.csi.core.server._test.GLOBAL_BYTE_BUFFER_POOL
+import ru.capjack.csi.core.server._test.TestConnectionAuthorizer
 import ru.capjack.csi.core.server.internal.Channels
 import ru.capjack.csi.core.server.internal.ConnectionAuthorizationAcceptor
 import ru.capjack.csi.core.server.internal.ConnectionRecoveryAcceptor
-import ru.capjack.csi.core.server._test.FakeDelayableAssistant
 import ru.capjack.csi.core.server.internal.ServerConnection
-import ru.capjack.csi.core.server._test.TestConnectionAuthorizer
 import ru.capjack.tool.utils.concurrency.Sluice
-import java.lang.UnsupportedOperationException
 
 class CoverageChannels {
 	@Test(expected = IllegalArgumentException::class)
 	fun `Coverage bad activityTimeoutSeconds`() {
 		Channels(
 			Sluice(false),
+			GLOBAL_BYTE_BUFFER_POOL,
 			FakeDelayableAssistant,
 			1,
 			0,
@@ -36,6 +37,7 @@ class CoverageChannels {
 	fun `Coverage bad shutdownTimeoutSeconds`() {
 		Channels(
 			Sluice(false),
+			GLOBAL_BYTE_BUFFER_POOL,
 			FakeDelayableAssistant,
 			1,
 			1,
@@ -55,6 +57,7 @@ class CoverageChannels {
 	fun `Coverage bad stopTimeoutSeconds`() {
 		Channels(
 			Sluice(false),
+			GLOBAL_BYTE_BUFFER_POOL,
 			FakeDelayableAssistant,
 			1,
 			1,

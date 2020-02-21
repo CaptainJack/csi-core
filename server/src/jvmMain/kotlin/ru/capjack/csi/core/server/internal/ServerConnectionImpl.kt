@@ -3,9 +3,11 @@ package ru.capjack.csi.core.server.internal
 import ru.capjack.csi.core.common.ConnectionProcessor
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.common.InternalConnectionImpl
+import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.lang.toHexString
 import ru.capjack.tool.lang.waitIf
 import ru.capjack.tool.utils.concurrency.DelayableAssistant
+import ru.capjack.tool.utils.concurrency.ObjectPool
 
 internal class ServerConnectionImpl<I : Any>(
 	id: Long,
@@ -13,12 +15,14 @@ internal class ServerConnectionImpl<I : Any>(
 	channel: InternalChannel,
 	processor: ConnectionProcessor,
 	assistant: DelayableAssistant,
+	byteBuffers: ObjectPool<ByteBuffer>,
 	private val releaser: ServerConnectionReleaser<I>
 ) : InternalConnectionImpl(
 	id,
 	channel,
 	processor,
 	assistant,
+	byteBuffers,
 	"$identity-${id.toHexString()}"
 ), ServerConnection<I> {
 	

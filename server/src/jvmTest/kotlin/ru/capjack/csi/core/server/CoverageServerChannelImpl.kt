@@ -4,10 +4,11 @@ import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.server._test.EmptyChannel
 import ru.capjack.csi.core.server._test.EmptyChannelProcessor
 import ru.capjack.csi.core.server._test.EmptyServerChannelReleaser
+import ru.capjack.csi.core.server._test.GLOBAL_BYTE_BUFFER_POOL
+import ru.capjack.csi.core.server._test.assistant
 import ru.capjack.csi.core.server.internal.ServerChannel
 import ru.capjack.csi.core.server.internal.ServerChannelImpl
 import ru.capjack.csi.core.server.internal.ServerChannelReleaser
-import ru.capjack.csi.core.server._test.assistant
 import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.lang.EMPTY_FUNCTION_0
@@ -29,6 +30,7 @@ class CoverageServerChannelImpl {
 		val channel = ServerChannelImpl(
 			EmptyChannel,
 			EmptyChannelProcessor,
+			GLOBAL_BYTE_BUFFER_POOL,
 			object : DelayableAssistant {
 				override fun execute(code: () -> Unit) {}
 				
@@ -61,24 +63,26 @@ class CoverageServerChannelImpl {
 	@Test
 	fun `Coverage close`() {
 		var opened = true
-		val channel = ServerChannelImpl(object : Channel {
-			override val id: Any = 0
-			
-			override fun send(data: Byte) {}
-			
-			override fun send(data: ByteArray) {}
-			
-			override fun send(data: InputByteBuffer) {
-				sleep(100)
-				data.skipRead()
-			}
-			
-			override fun close() {
-				opened = false
-			}
-			
-		},
+		val channel = ServerChannelImpl(
+			object : Channel {
+				override val id: Any = 0
+				
+				override fun send(data: Byte) {}
+				
+				override fun send(data: ByteArray) {}
+				
+				override fun send(data: InputByteBuffer) {
+					sleep(100)
+					data.skipRead()
+				}
+				
+				override fun close() {
+					opened = false
+				}
+				
+			},
 			EmptyChannelProcessor,
+			GLOBAL_BYTE_BUFFER_POOL,
 			assistant(), 1,
 			EmptyServerChannelReleaser
 		)
@@ -97,19 +101,21 @@ class CoverageServerChannelImpl {
 	
 	@Test
 	fun `Coverage output buffer must be read in full`() {
-		val channel = ServerChannelImpl(object : Channel {
-			override val id: Any = 0
-			
-			override fun send(data: Byte) {}
-			
-			override fun send(data: ByteArray) {}
-			
-			override fun send(data: InputByteBuffer) {}
-			
-			override fun close() {}
-			
-		},
+		val channel = ServerChannelImpl(
+			object : Channel {
+				override val id: Any = 0
+				
+				override fun send(data: Byte) {}
+				
+				override fun send(data: ByteArray) {}
+				
+				override fun send(data: InputByteBuffer) {}
+				
+				override fun close() {}
+				
+			},
 			EmptyChannelProcessor,
+			GLOBAL_BYTE_BUFFER_POOL,
 			assistant(), 1,
 			EmptyServerChannelReleaser
 		)
@@ -123,15 +129,16 @@ class CoverageServerChannelImpl {
 		val channel = ServerChannelImpl(
 			EmptyChannel,
 			EmptyChannelProcessor,
+			GLOBAL_BYTE_BUFFER_POOL,
 			assistant(), 1, object : ServerChannelReleaser {
-			override fun releaseServerChannel(channel: ServerChannel) {
-				assertFailsWith<IllegalStateException> {
-					channel.useProcessor(EmptyChannelProcessor)
+				override fun releaseServerChannel(channel: ServerChannel) {
+					assertFailsWith<IllegalStateException> {
+						channel.useProcessor(EmptyChannelProcessor)
+					}
+					sleep(10)
+					opened = false
 				}
-				sleep(10)
-				opened = false
-			}
-		})
+			})
 		
 		channel.close()
 		
@@ -147,12 +154,13 @@ class CoverageServerChannelImpl {
 		val channel = ServerChannelImpl(
 			EmptyChannel,
 			EmptyChannelProcessor,
+			GLOBAL_BYTE_BUFFER_POOL,
 			assistant(), 1, object : ServerChannelReleaser {
-			override fun releaseServerChannel(channel: ServerChannel) {
-				sleep(10)
-				opened = false
-			}
-		})
+				override fun releaseServerChannel(channel: ServerChannel) {
+					sleep(10)
+					opened = false
+				}
+			})
 		
 		channel.send(0)
 		
@@ -170,12 +178,13 @@ class CoverageServerChannelImpl {
 		val channel = ServerChannelImpl(
 			EmptyChannel,
 			EmptyChannelProcessor,
+			GLOBAL_BYTE_BUFFER_POOL,
 			assistant(), 1, object : ServerChannelReleaser {
-			override fun releaseServerChannel(channel: ServerChannel) {
-				sleep(10)
-				opened = false
-			}
-		})
+				override fun releaseServerChannel(channel: ServerChannel) {
+					sleep(10)
+					opened = false
+				}
+			})
 		
 		channel.close()
 		channel.send(byteArrayOf(1))
@@ -192,12 +201,13 @@ class CoverageServerChannelImpl {
 		val channel = ServerChannelImpl(
 			EmptyChannel,
 			EmptyChannelProcessor,
+			GLOBAL_BYTE_BUFFER_POOL,
 			assistant(), 1, object : ServerChannelReleaser {
-			override fun releaseServerChannel(channel: ServerChannel) {
-				sleep(10)
-				opened = false
-			}
-		})
+				override fun releaseServerChannel(channel: ServerChannel) {
+					sleep(10)
+					opened = false
+				}
+			})
 		
 		channel.close()
 		channel.send(buffer)

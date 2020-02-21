@@ -2,7 +2,6 @@ package ru.capjack.csi.core.server
 
 import org.junit.Test
 import ru.capjack.csi.core.server._test.server
-import kotlin.test.Ignore
 
 class BehaviorStops {
 	@Test

@@ -1,7 +1,7 @@
 package ru.capjack.csi.core.common
 
 import ru.capjack.csi.core.ProtocolBrokenException
-import ru.capjack.tool.io.FramedInputByteBuffer
+import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.readToArray
 import ru.capjack.tool.lang.EMPTY_FUNCTION_0
@@ -14,6 +14,7 @@ import ru.capjack.tool.logging.warn
 import ru.capjack.tool.logging.wrap
 import ru.capjack.tool.utils.concurrency.DelayableAssistant
 import ru.capjack.tool.utils.concurrency.LivingWorker
+import ru.capjack.tool.utils.concurrency.ObjectPool
 import ru.capjack.tool.utils.concurrency.accessOrDefer
 import ru.capjack.tool.utils.concurrency.accessOrDeferOnLive
 import ru.capjack.tool.utils.concurrency.executeOnLive
@@ -24,11 +25,12 @@ abstract class InternalConnectionImpl(
 	private var channel: InternalChannel,
 	private var processor: ConnectionProcessor,
 	assistant: DelayableAssistant,
+	byteBuffers: ObjectPool<ByteBuffer>,
 	loggingName: String
 ) : InternalConnection, ChannelProcessor {
 	
-	private val logger: Logger = ownLogger.wrap("[$loggingName] ")
-	private val messages = Messages()
+	override val logger: Logger = ownLogger.wrap("[$loggingName] ")
+	override val messages = Messages(byteBuffers)
 	private val worker = LivingWorker(assistant, ::syncHandleError)
 	
 	override fun accept() {
@@ -36,7 +38,7 @@ abstract class InternalConnectionImpl(
 		worker.defer {
 			if (worker.alive) {
 				logger.debug { "Accept successful on channel ${channel.id}" }
-				processor = processor.processConnectionAccept(channel, this, messages)
+				syncUseProcessor(processor.processConnectionAccept(channel, this))
 			}
 			else {
 				logger.debug { "Accept failed on closed connection" }
@@ -64,11 +66,12 @@ abstract class InternalConnectionImpl(
 				prevChannel.closeWithMarker(ProtocolMarker.CLOSE_DEFINITELY)
 				
 				channel.useProcessor(this)
-				processor = processor.processConnectionRecovery(channel, lastSentMessageId)
-				
-				messages.outgoing.apply {
-					clearTo(lastSentMessageId)
-					forEach(::syncSendMessage)
+				syncUseProcessor(processor.processConnectionRecovery(channel))
+				if (worker.alive) {
+					messages.outgoing.apply {
+						clearTo(lastSentMessageId)
+						forEach(::syncSendMessage)
+					}
 				}
 			}
 			else {
@@ -139,7 +142,7 @@ abstract class InternalConnectionImpl(
 		}
 	}
 	
-	override fun processChannelInput(channel: InternalChannel, buffer: FramedInputByteBuffer): ChannelProcessorInputResult {
+	override fun processChannelInput(channel: InternalChannel, buffer: InputByteBuffer): ChannelProcessorInputResult {
 		logger.trace { "Try process input ${buffer.readableSize}B from channel ${channel.id}" }
 		
 		worker.withCapture {
@@ -184,7 +187,7 @@ abstract class InternalConnectionImpl(
 			if (worker.alive) {
 				if (this.channel == channel) {
 					if (interrupted) {
-						processor = processor.processChannelClose(this)
+						syncUseProcessor(processor.processChannelInterrupt(this))
 					}
 					else {
 						logger.debug("Close definitely")
@@ -201,6 +204,17 @@ abstract class InternalConnectionImpl(
 	///
 	
 	protected abstract fun syncProcessClose()
+	
+	private fun syncUseProcessor(processor: ConnectionProcessor) {
+		if (this.processor != processor) {
+			if (worker.alive) {
+				this.processor = processor
+			}
+			else {
+				processor.processConnectionClose()
+			}
+		}
+	}
 	
 	private fun syncHandleError(e: Throwable) {
 		val marker = if (e is ProtocolBrokenException) {
@@ -244,7 +258,7 @@ abstract class InternalConnectionImpl(
 		worker.die()
 		processor = NothingConnectionProcessor
 		channel = NothingInternalChannel
-		messages.outgoing.clear()
+		messages.outgoing.dispose()
 		
 		p.processConnectionClose()
 		

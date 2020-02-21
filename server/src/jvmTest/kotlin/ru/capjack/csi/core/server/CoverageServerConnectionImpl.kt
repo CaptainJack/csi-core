@@ -5,9 +5,10 @@ import ru.capjack.csi.core.common.NothingInternalChannel
 import ru.capjack.csi.core.server._test.EmptyConnectionProcessor
 import ru.capjack.csi.core.server._test.EmptyInternalChannel
 import ru.capjack.csi.core.server._test.EmptyServerConnectionReleaser
-import ru.capjack.csi.core.server.internal.ServerConnectionImpl
+import ru.capjack.csi.core.server._test.GLOBAL_BYTE_BUFFER_POOL
 import ru.capjack.csi.core.server._test.assistant
-import ru.capjack.tool.io.FramedArrayByteBuffer
+import ru.capjack.csi.core.server.internal.ServerConnectionImpl
+import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.lang.waitIf
 
 class CoverageServerConnectionImpl {
@@ -19,6 +20,7 @@ class CoverageServerConnectionImpl {
 			EmptyInternalChannel,
 			EmptyConnectionProcessor,
 			assistant(),
+			GLOBAL_BYTE_BUFFER_POOL,
 			EmptyServerConnectionReleaser
 		)
 		
@@ -38,6 +40,7 @@ class CoverageServerConnectionImpl {
 			EmptyInternalChannel,
 			EmptyConnectionProcessor,
 			assistant(),
+			GLOBAL_BYTE_BUFFER_POOL,
 			EmptyServerConnectionReleaser
 		)
 		
@@ -54,6 +57,7 @@ class CoverageServerConnectionImpl {
 			EmptyInternalChannel,
 			EmptyConnectionProcessor,
 			assistant(),
+			GLOBAL_BYTE_BUFFER_POOL,
 			EmptyServerConnectionReleaser
 		)
 		
@@ -69,10 +73,11 @@ class CoverageServerConnectionImpl {
 			EmptyInternalChannel,
 			EmptyConnectionProcessor,
 			assistant(),
+			GLOBAL_BYTE_BUFFER_POOL,
 			EmptyServerConnectionReleaser
 		)
 		
-		connection.processChannelInput(NothingInternalChannel, FramedArrayByteBuffer())
+		connection.processChannelInput(NothingInternalChannel, ArrayByteBuffer(0))
 	}
 }
 

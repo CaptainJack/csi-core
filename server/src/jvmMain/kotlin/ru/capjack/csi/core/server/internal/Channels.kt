@@ -6,6 +6,7 @@ import ru.capjack.csi.core.common.DummyChannelHandler
 import ru.capjack.csi.core.common.ProtocolMarker
 import ru.capjack.csi.core.server.ChannelAcceptor
 import ru.capjack.csi.core.server.ConnectionAuthorizer
+import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.putInt
 import ru.capjack.tool.lang.waitIfImmediately
 import ru.capjack.tool.logging.info
@@ -13,12 +14,14 @@ import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
 import ru.capjack.tool.logging.warn
 import ru.capjack.tool.utils.concurrency.DelayableAssistant
+import ru.capjack.tool.utils.concurrency.ObjectPool
 import ru.capjack.tool.utils.concurrency.Sluice
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
 internal class Channels<I : Any>(
 	private val sluice: Sluice,
+	private val byteBuffers: ObjectPool<ByteBuffer>,
 	private val assistant: DelayableAssistant,
 	serverVersion: Int,
 	private val activityTimeoutSeconds: Int,
@@ -51,7 +54,7 @@ internal class Channels<I : Any>(
 		
 		sluice.pass {
 			_size.getAndIncrement()
-			val delegate = ServerChannelImpl(channel, receptionProcessor, assistant, activityTimeoutSeconds, this)
+			val delegate = ServerChannelImpl(channel, receptionProcessor, byteBuffers, assistant, activityTimeoutSeconds, this)
 			channels.add(delegate)
 			return delegate
 		}

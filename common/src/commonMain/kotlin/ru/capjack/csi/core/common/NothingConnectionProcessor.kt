@@ -1,23 +1,22 @@
 package ru.capjack.csi.core.common
 
 import ru.capjack.csi.core.Channel
-import ru.capjack.csi.core.Connection
-import ru.capjack.tool.io.FramedInputByteBuffer
+import ru.capjack.tool.io.InputByteBuffer
 
 object NothingConnectionProcessor : ConnectionProcessor {
-	override fun processConnectionAccept(channel: Channel, connection: Connection, messages: Messages): ConnectionProcessor {
+	override fun processConnectionAccept(channel: Channel, connection: InternalConnection): ConnectionProcessor {
 		throw UnsupportedOperationException()
 	}
 	
-	override fun processConnectionRecovery(channel: Channel, lastSentMessageId: Int): ConnectionProcessor {
+	override fun processConnectionRecovery(channel: Channel): ConnectionProcessor {
 		throw UnsupportedOperationException()
 	}
 	
-	override fun processChannelInput(channel: Channel, buffer: FramedInputByteBuffer): Boolean {
+	override fun processChannelInput(channel: Channel, buffer: InputByteBuffer): Boolean {
 		throw UnsupportedOperationException()
 	}
 	
-	override fun processChannelClose(connection: InternalConnection): ConnectionProcessor {
+	override fun processChannelInterrupt(connection: InternalConnection): ConnectionProcessor {
 		throw UnsupportedOperationException()
 	}
 	

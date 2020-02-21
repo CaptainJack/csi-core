@@ -11,12 +11,12 @@ import kotlin.test.assertNotSame
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-class TestOutgoingMessageBuffer {
+class OutgoingMessageBufferTest {
 	
 	@Test
 	fun bug_clearing_infinitely() {
 		//+1 -1 +2 +3 -2 +4 -3 +5 +6 -4
-		val buffer = OutgoingMessageBuffer()
+		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL)
 		
 		buffer.add(1)
 		buffer.clearTo(1)
@@ -32,7 +32,7 @@ class TestOutgoingMessageBuffer {
 	
 	@Test
 	fun message_ids_sequential() {
-		val buffer = OutgoingMessageBuffer()
+		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL)
 		
 		val id1 = buffer.add(0).id
 		val id2 = buffer.add(0).id
@@ -44,7 +44,7 @@ class TestOutgoingMessageBuffer {
 	
 	@Test
 	fun message_ids_overflow_sign() {
-		val buffer = OutgoingMessageBuffer(Int.MAX_VALUE)
+		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL, Int.MAX_VALUE)
 		
 		val id1 = buffer.add(0).id
 		val id2 = buffer.add(0).id
@@ -55,7 +55,7 @@ class TestOutgoingMessageBuffer {
 	
 	@Test
 	fun message_ids_overflow_zero() {
-		val buffer = OutgoingMessageBuffer(-1)
+		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL, -1)
 		
 		val id1 = buffer.add(0).id
 		val id2 = buffer.add(0).id
@@ -68,7 +68,7 @@ class TestOutgoingMessageBuffer {
 	
 	@Test
 	fun messages_buffered() {
-		val buffer = OutgoingMessageBuffer()
+		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL)
 		
 		val messages = listOf(
 			buffer.add(0),
@@ -81,19 +81,19 @@ class TestOutgoingMessageBuffer {
 	
 	@Test
 	fun clear_all() {
-		val buffer = OutgoingMessageBuffer()
+		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL)
 		buffer.add(0)
 		buffer.add(1)
 		buffer.add(2)
 		
-		buffer.clear()
+		buffer.dispose()
 		
 		assertTrue(buffer.toList().isEmpty())
 	}
 	
 	@Test
 	fun clear_to() {
-		val buffer = OutgoingMessageBuffer()
+		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL)
 		
 		buffer.add(0)
 		buffer.add(1)
@@ -114,7 +114,7 @@ class TestOutgoingMessageBuffer {
 	
 	@Test
 	fun messages_polled() {
-		val buffer = OutgoingMessageBuffer()
+		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL)
 		
 		val m1 = buffer.add(0)
 		val m2 = buffer.add(1)
@@ -136,7 +136,7 @@ class TestOutgoingMessageBuffer {
 	
 	@Test
 	fun message_format_byte() {
-		val buffer = OutgoingMessageBuffer(42)
+		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL, 42)
 		
 		val data: Byte = 0x0F
 		val bytes = buffer.add(data).data.readToArray().toList()
@@ -153,7 +153,7 @@ class TestOutgoingMessageBuffer {
 	
 	@Test
 	fun message_format_bytes() {
-		val buffer = OutgoingMessageBuffer(42)
+		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL, 42)
 		
 		val data = byteArrayOf(0x0F, 0x77)
 		val bytes = buffer.add(data).data.readToArray().toList()
@@ -170,7 +170,7 @@ class TestOutgoingMessageBuffer {
 	
 	@Test
 	fun message_format_buffer() {
-		val buffer = OutgoingMessageBuffer(42)
+		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL, 42)
 		
 		val data = ArrayByteBuffer {
 			writeInt(10266)
@@ -189,7 +189,7 @@ class TestOutgoingMessageBuffer {
 	
 	@Test
 	fun message_format_after_polled() {
-		val buffer = OutgoingMessageBuffer(42)
+		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL, 42)
 		
 		val m1 = buffer.add(byteArrayOf(0x03, 0x13, 0x50))
 		
@@ -211,7 +211,7 @@ class TestOutgoingMessageBuffer {
 	
 	@Test
 	fun message_readable_on_iterate() {
-		val buffer = OutgoingMessageBuffer(42)
+		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL, 42)
 		
 		val m1 = buffer.add(0)
 		

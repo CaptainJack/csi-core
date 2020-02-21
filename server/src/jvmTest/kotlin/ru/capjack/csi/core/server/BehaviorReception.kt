@@ -1,7 +1,6 @@
 package ru.capjack.csi.core.server
 
 import ru.capjack.csi.core.server._test.server
-import ru.capjack.tool.lang.waitIf
 import kotlin.test.Test
 
 class BehaviorReception {

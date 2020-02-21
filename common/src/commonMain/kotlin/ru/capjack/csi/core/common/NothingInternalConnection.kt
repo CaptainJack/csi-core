@@ -1,10 +1,17 @@
 package ru.capjack.csi.core.common
 
 import ru.capjack.tool.io.InputByteBuffer
+import ru.capjack.tool.logging.Logger
 
 object NothingInternalConnection : InternalConnection {
 	override val id: Long
-		get() = 0
+		get() = throw UnsupportedOperationException()
+	
+	override val logger: Logger
+		get() = throw UnsupportedOperationException()
+	
+	override val messages: Messages
+		get() = throw UnsupportedOperationException()
 	
 	override fun accept() {
 		throw UnsupportedOperationException()

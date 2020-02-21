@@ -1,7 +1,6 @@
 package ru.capjack.csi.core.client._test
 
 import ru.capjack.tool.io.ArrayByteBuffer
-import ru.capjack.tool.io.FramedArrayByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.OutputByteBuffer
 import ru.capjack.tool.io.readToArray
@@ -79,11 +78,11 @@ fun assertEqualsBytes(expected: String, actual: InputByteBuffer, message: String
 	assertEqualsBytes(expected, actual.readToArray(), message)
 }
 
-inline fun buffer(data: OutputByteBuffer.() -> Unit): FramedArrayByteBuffer {
-	return FramedArrayByteBuffer().apply(data)
+inline fun buffer(data: OutputByteBuffer.() -> Unit): ArrayByteBuffer {
+	return ArrayByteBuffer().apply(data)
 }
 
-fun buffer(data: String): FramedArrayByteBuffer {
+fun buffer(data: String): ArrayByteBuffer {
 	return buffer { writeBuffer(stringToByteBuffer(data)) }
 }
 

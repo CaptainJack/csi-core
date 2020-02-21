@@ -1,58 +1,64 @@
 package ru.capjack.csi.core.client.internal
 
-import ru.capjack.csi.core.client.ChannelGate
-import ru.capjack.csi.core.client.ClientConnectionHandler
 import ru.capjack.csi.core.Channel
+import ru.capjack.csi.core.client.ChannelGate
+import ru.capjack.csi.core.client.ConnectionHandler
 import ru.capjack.csi.core.common.ConnectionProcessor
 import ru.capjack.csi.core.common.InternalConnection
 import ru.capjack.csi.core.common.Messages
 import ru.capjack.csi.core.common.MessagingConnectionProcessor
-import ru.capjack.csi.core.common.NothingChannel
 import ru.capjack.csi.core.common.ProtocolMarker
-import ru.capjack.tool.io.FramedInputByteBuffer
+import ru.capjack.tool.io.ByteBuffer
+import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.lang.alsoElse
 import ru.capjack.tool.lang.alsoIf
+import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.utils.Cancelable
 import ru.capjack.tool.utils.concurrency.DelayableAssistant
+import ru.capjack.tool.utils.concurrency.ObjectPool
 
 internal class ClientMessagingConnectionProcessor(
-	handler: ClientConnectionHandler,
+	handler: ConnectionHandler,
 	messages: Messages,
+	logger: Logger,
 	private val assistant: DelayableAssistant,
+	private val byteBuffers: ObjectPool<ByteBuffer>,
 	private val activityTimeoutSeconds: Int,
-	private val channelGate: ChannelGate,
-	private var channel: Channel
-) : MessagingConnectionProcessor<ClientConnectionHandler>(handler, messages) {
+	private val gate: ChannelGate,
+	channel: Channel
+) : MessagingConnectionProcessor<ConnectionHandler>(handler, messages, logger) {
 	
 	private var pinger = Cancelable.DUMMY
 	
 	init {
-		startPinger()
+		startPinger(channel)
 	}
 	
-	override fun processChannelClose(connection: InternalConnection): ConnectionProcessor {
-		channel = NothingChannel
+	override fun processChannelInterrupt(connection: InternalConnection): ConnectionProcessor {
 		stopPinger()
 		val recoveryHandler = handler.handleConnectionLost()
-		return RecoveryConnectionProcessor(this, recoveryHandler, assistant, channelGate, connection, activityTimeoutSeconds, messages.incoming.id)
+		return RecoveryConnectionProcessor(this, recoveryHandler, assistant, byteBuffers, gate, connection, activityTimeoutSeconds, lastIncomingMessageId)
 	}
 	
-	override fun doProcessConnectionRecovery(channel: Channel, lastSentMessageId: Int): ConnectionProcessor {
-		this.channel = channel
-		startPinger()
+	override fun doProcessConnectionRecovery(channel: Channel): ConnectionProcessor {
+		startPinger(channel)
 		return this
 	}
 	
-	override fun doProcessConnectionClose(): ClientConnectionHandler {
-		channel = NothingChannel
+	override fun doProcessConnectionClose(): ConnectionHandler {
 		stopPinger()
-		return NothingClientConnectionHandler()
+		return NothingConnectionHandler()
 	}
 	
-	override fun processChannelInputMarker(channel: Channel, buffer: FramedInputByteBuffer, marker: Byte): Boolean {
+	override fun processChannelInputMarker(channel: Channel, buffer: InputByteBuffer, marker: Byte): Boolean {
 		return when (marker) {
 			ProtocolMarker.MESSAGING_PING          -> true
 			ProtocolMarker.SERVER_CLOSE_SHUTDOWN   -> {
+				channel.close()
+				false
+			}
+			ProtocolMarker.SERVER_CLOSE_CONCURRENT -> {
+				logger.warn("Closing because of the received marker ${ProtocolMarker.toString(marker)}")
 				channel.close()
 				false
 			}
@@ -71,13 +77,11 @@ internal class ClientMessagingConnectionProcessor(
 		}
 	}
 	
-	private fun ping() {
-		channel.send(ProtocolMarker.MESSAGING_PING)
-	}
-	
-	private fun startPinger() {
+	private fun startPinger(channel: Channel) {
 		stopPinger()
-		pinger = assistant.repeat(activityTimeoutSeconds * 1000, ::ping)
+		pinger = assistant.repeat(activityTimeoutSeconds * 1000) {
+			channel.send(ProtocolMarker.MESSAGING_PING)
+		}
 	}
 	
 	private fun stopPinger() {

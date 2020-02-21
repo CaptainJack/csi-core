@@ -5,17 +5,20 @@ import ru.capjack.csi.core.common.ChannelProcessor
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.server.ConnectionAcceptor
 import ru.capjack.csi.core.server.ConnectionRegistry
+import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.lang.waitIfImmediately
 import ru.capjack.tool.logging.info
 import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
 import ru.capjack.tool.logging.warn
 import ru.capjack.tool.utils.concurrency.DelayableAssistant
+import ru.capjack.tool.utils.concurrency.ObjectPool
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
 internal class Connections<I : Any>(
 	private val assistant: DelayableAssistant,
+	private val byteBuffers: ObjectPool<ByteBuffer>,
 	private val acceptor: ConnectionAcceptor<I>,
 	private val activityTimeoutSeconds: Int,
 	private val stopTimeoutSeconds: Int,
@@ -49,8 +52,9 @@ internal class Connections<I : Any>(
 			connectionId,
 			identity,
 			channel,
-			AcceptationConnectionProcessor(assistant, acceptor, activityTimeoutSeconds, identity, connectionId),
+			AcceptationConnectionProcessor(assistant, acceptor, activityTimeoutSeconds, identity),
 			assistant,
+			byteBuffers,
 			this
 		)
 		

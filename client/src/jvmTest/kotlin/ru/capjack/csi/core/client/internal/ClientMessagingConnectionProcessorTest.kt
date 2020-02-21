@@ -1,10 +1,11 @@
 package ru.capjack.csi.core.client.internal
 
-import ru.capjack.csi.core.client.ClientConnectionHandler
+import ru.capjack.csi.core.client.ConnectionHandler
 import ru.capjack.csi.core.client.ConnectionRecoveryHandler
 import ru.capjack.csi.core.client.DummyConnectionRecoveryHandler
 import ru.capjack.csi.core.client._test.FnChannel
 import ru.capjack.csi.core.client._test.GLOBAL_ASSISTANT
+import ru.capjack.csi.core.client._test.GLOBAL_BYTE_BUFFER_POOL
 import ru.capjack.csi.core.client._test.assertEqualsBytes
 import ru.capjack.csi.core.client._test.buffer
 import ru.capjack.csi.core.client._test.gate
@@ -15,20 +16,21 @@ import ru.capjack.csi.core.common.NothingInternalConnection
 import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.lang.waitIf
+import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.utils.Cancelable
 import ru.capjack.tool.utils.concurrency.DelayableAssistant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class TestClientMessagingConnectionProcessor {
+class ClientMessagingConnectionProcessorTest {
 	@Test
 	fun `When channel closed then handle connection lost and stop pinger`() {
 		
 		var actualLost = false
 		var actualPingerStopped = false
 		
-		val handler = object : ClientConnectionHandler {
+		val handler = object : ConnectionHandler {
 			override fun handleConnectionLost(): ConnectionRecoveryHandler {
 				actualLost = true
 				return DummyConnectionRecoveryHandler()
@@ -46,10 +48,10 @@ class TestClientMessagingConnectionProcessor {
 		}
 		
 		val processor = ClientMessagingConnectionProcessor(
-			handler, Messages(), assistant, 1, gate { }, NothingChannel
+			handler, Messages(GLOBAL_BYTE_BUFFER_POOL), ownLogger, assistant, GLOBAL_BYTE_BUFFER_POOL, 1, gate { }, NothingChannel
 		)
 		
-		processor.processChannelClose(NothingInternalConnection)
+		processor.processChannelInterrupt(NothingInternalConnection)
 		
 		assertTrue(actualLost)
 		assertTrue(actualPingerStopped)
@@ -67,10 +69,10 @@ class TestClientMessagingConnectionProcessor {
 		}
 		
 		val processor = ClientMessagingConnectionProcessor(
-			NothingClientConnectionHandler(), Messages(), assistant, 1, gate { }, NothingChannel
+			NothingConnectionHandler(), Messages(GLOBAL_BYTE_BUFFER_POOL), ownLogger, assistant, GLOBAL_BYTE_BUFFER_POOL, 1, gate { }, NothingChannel
 		)
 		
-		processor.processConnectionRecovery(NothingChannel, 0)
+		processor.processConnectionRecovery(NothingChannel)
 		
 		assertEquals(2, actualPingerStarts)
 	}
@@ -85,7 +87,7 @@ class TestClientMessagingConnectionProcessor {
 			}
 		}
 		
-		val handler = object : ClientConnectionHandler {
+		val handler = object : ConnectionHandler {
 			override fun handleConnectionLost(): ConnectionRecoveryHandler = DummyConnectionRecoveryHandler()
 			override fun handleConnectionCloseTimeout(seconds: Int) {}
 			override fun handleConnectionMessage(message: InputByteBuffer) {}
@@ -93,7 +95,7 @@ class TestClientMessagingConnectionProcessor {
 		}
 		
 		val processor = ClientMessagingConnectionProcessor(
-			handler, Messages(), assistant, 1, gate { }, NothingChannel
+			handler, Messages(GLOBAL_BYTE_BUFFER_POOL), ownLogger, assistant, GLOBAL_BYTE_BUFFER_POOL, 1, gate { }, NothingChannel
 		)
 		
 		processor.processConnectionClose()
@@ -111,7 +113,7 @@ class TestClientMessagingConnectionProcessor {
 		})
 		
 		val processor = ClientMessagingConnectionProcessor(
-			NothingClientConnectionHandler(), Messages(), GLOBAL_ASSISTANT, 1, gate { }, channel
+			NothingConnectionHandler(), Messages(GLOBAL_BYTE_BUFFER_POOL), ownLogger, GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, 1, gate { }, channel
 		)
 		
 		val processInputResult = processor.processChannelInput(channel, buffer("20"))
@@ -130,7 +132,7 @@ class TestClientMessagingConnectionProcessor {
 		val channel = FnChannel(close = { actualChannelClose = true })
 		
 		val processor = ClientMessagingConnectionProcessor(
-			NothingClientConnectionHandler(), Messages(), GLOBAL_ASSISTANT, 1, gate { }, channel
+			NothingConnectionHandler(), Messages(GLOBAL_BYTE_BUFFER_POOL), ownLogger, GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, 1, gate { }, channel
 		)
 		
 		processor.processChannelInput(channel, buffer("54"))
@@ -142,17 +144,18 @@ class TestClientMessagingConnectionProcessor {
 	fun `When input SERVER_SHUTDOWN_TIMEOUT then handle connection close timeout`() {
 		var actualConnectionCloseTimeout = 0
 		
-		val handler = object : ClientConnectionHandler {
+		val handler = object : ConnectionHandler {
 			override fun handleConnectionLost(): ConnectionRecoveryHandler = DummyConnectionRecoveryHandler()
 			override fun handleConnectionCloseTimeout(seconds: Int) {
 				actualConnectionCloseTimeout = seconds
 			}
+			
 			override fun handleConnectionMessage(message: InputByteBuffer) {}
 			override fun handleConnectionClose() {}
 		}
 		
 		val processor = ClientMessagingConnectionProcessor(
-			handler, Messages(), GLOBAL_ASSISTANT, 1, gate { }, NothingChannel
+			handler, Messages(GLOBAL_BYTE_BUFFER_POOL), ownLogger, GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, 1, gate { }, NothingChannel
 		)
 		
 		val buffer = buffer { }
@@ -171,17 +174,18 @@ class TestClientMessagingConnectionProcessor {
 	fun `When input message then handle connection message`() {
 		val actualMessage = ArrayByteBuffer()
 		
-		val handler = object : ClientConnectionHandler {
+		val handler = object : ConnectionHandler {
 			override fun handleConnectionLost(): ConnectionRecoveryHandler = DummyConnectionRecoveryHandler()
 			override fun handleConnectionCloseTimeout(seconds: Int) {}
 			override fun handleConnectionMessage(message: InputByteBuffer) {
 				actualMessage.writeBuffer(message)
 			}
+			
 			override fun handleConnectionClose() {}
 		}
 		
 		val processor = ClientMessagingConnectionProcessor(
-			handler, Messages(), GLOBAL_ASSISTANT, 1, gate { }, NothingChannel
+			handler, Messages(GLOBAL_BYTE_BUFFER_POOL), ownLogger, GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, 1, gate { }, NothingChannel
 		)
 		
 		processor.processChannelInput(NothingChannel, buffer("21  00 00 00 01  00 00 00 01  42"))

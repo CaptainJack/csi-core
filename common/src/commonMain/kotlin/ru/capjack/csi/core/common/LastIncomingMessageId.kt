@@ -2,7 +2,7 @@ package ru.capjack.csi.core.common
 
 import ru.capjack.tool.io.putInt
 
-class LastReceivedMessageId {
+class LastIncomingMessageId {
 	var changed: Boolean = false
 		private set
 	

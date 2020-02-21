@@ -7,17 +7,20 @@ import ru.capjack.csi.core.common.ChannelProcessor
 import ru.capjack.csi.core.common.ChannelProcessorInputResult
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.common.ProtocolMarker
-import ru.capjack.tool.io.FramedInputByteBuffer
+import ru.capjack.tool.io.ByteBuffer
+import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.utils.concurrency.DelayableAssistant
+import ru.capjack.tool.utils.concurrency.ObjectPool
 
 internal class AuthorizationChannelProcessor(
 	private val assistant: DelayableAssistant,
-	private val channelGate: ChannelGate,
+	private val byteBuffers: ObjectPool<ByteBuffer>,
+	private val gate: ChannelGate,
 	private var acceptor: ConnectionAcceptor,
 	private val activityTimeoutSeconds: Int
 ) : ChannelProcessor {
 	
-	override fun processChannelInput(channel: InternalChannel, buffer: FramedInputByteBuffer): ChannelProcessorInputResult {
+	override fun processChannelInput(channel: InternalChannel, buffer: InputByteBuffer): ChannelProcessorInputResult {
 		val marker = buffer.readByte()
 		if (marker == ProtocolMarker.AUTHORIZATION) {
 			if (buffer.isReadable(8)) {
@@ -25,10 +28,12 @@ internal class AuthorizationChannelProcessor(
 				val connection = ClientConnectionImpl(
 					connectionId,
 					channel,
-					AuthorizationConnectionProcessor(assistant, activityTimeoutSeconds, acceptor, channelGate),
-					assistant
+					AuthorizationConnectionProcessor(assistant, byteBuffers, activityTimeoutSeconds, acceptor, gate),
+					assistant,
+					byteBuffers
 				)
 				acceptor = NothingConnectionAcceptor()
+				channel.useProcessor(connection)
 				connection.accept()
 				return ChannelProcessorInputResult.CONTINUE
 			}
@@ -39,10 +44,11 @@ internal class AuthorizationChannelProcessor(
 			ProtocolMarker.SERVER_CLOSE_VERSION       -> fail(channel, ConnectFailReason.VERSION)
 			ProtocolMarker.SERVER_CLOSE_AUTHORIZATION -> fail(channel, ConnectFailReason.AUTHORIZATION)
 			ProtocolMarker.SERVER_CLOSE_SHUTDOWN      -> fail(channel, ConnectFailReason.REFUSED)
+			ProtocolMarker.CLOSE_DEFINITELY           -> fail(channel, ConnectFailReason.REFUSED)
 			ProtocolMarker.CLOSE_ERROR                -> fail(channel, ConnectFailReason.ERROR)
 			ProtocolMarker.CLOSE_PROTOCOL_BROKEN      -> fail(channel, ConnectFailReason.ERROR)
+			ProtocolMarker.SERVER_CLOSE_CONCURRENT    -> fail(channel, ConnectFailReason.REFUSED)
 			ProtocolMarker.SERVER_SHUTDOWN_TIMEOUT    -> fail(channel, ConnectFailReason.REFUSED, ProtocolMarker.CLOSE_DEFINITELY)
-			ProtocolMarker.CLOSE_DEFINITELY           -> fail(channel, ConnectFailReason.REFUSED)
 			else                                      -> fail(channel, ConnectFailReason.ERROR, ProtocolMarker.CLOSE_PROTOCOL_BROKEN)
 		}
 		return ChannelProcessorInputResult.BREAK

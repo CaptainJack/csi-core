@@ -8,7 +8,7 @@ class BehaviorChannel {
 	fun `Activity timeout expired`() {
 		server {
 			channel {
-				receiveData("55")
+				receiveData("33")
 				receiveClose()
 			}
 		}

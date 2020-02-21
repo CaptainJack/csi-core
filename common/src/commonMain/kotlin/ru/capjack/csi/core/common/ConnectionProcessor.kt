@@ -1,17 +1,16 @@
 package ru.capjack.csi.core.common
 
 import ru.capjack.csi.core.Channel
-import ru.capjack.csi.core.Connection
-import ru.capjack.tool.io.FramedInputByteBuffer
+import ru.capjack.tool.io.InputByteBuffer
 
 interface ConnectionProcessor {
-	fun processConnectionAccept(channel: Channel, connection: Connection, messages: Messages): ConnectionProcessor
+	fun processConnectionAccept(channel: Channel, connection: InternalConnection): ConnectionProcessor
 	
-	fun processConnectionRecovery(channel: Channel, lastSentMessageId: Int): ConnectionProcessor
+	fun processConnectionRecovery(channel: Channel): ConnectionProcessor
 	
 	fun processConnectionClose()
 	
-	fun processChannelInput(channel: Channel, buffer: FramedInputByteBuffer): Boolean
+	fun processChannelInput(channel: Channel, buffer: InputByteBuffer): Boolean
 	
-	fun processChannelClose(connection: InternalConnection): ConnectionProcessor
+	fun processChannelInterrupt(connection: InternalConnection): ConnectionProcessor
 }

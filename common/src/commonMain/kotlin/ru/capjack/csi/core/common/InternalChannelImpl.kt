@@ -3,8 +3,8 @@ package ru.capjack.csi.core.common
 import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.ChannelHandler
 import ru.capjack.csi.core.ProtocolBrokenException
-import ru.capjack.tool.io.ArrayByteBuffer
-import ru.capjack.tool.io.FramedArrayByteBuffer
+import ru.capjack.tool.io.ByteBuffer
+import ru.capjack.tool.io.DummyByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.readToArray
 import ru.capjack.tool.lang.alsoElse
@@ -17,6 +17,7 @@ import ru.capjack.tool.logging.wrap
 import ru.capjack.tool.utils.Cancelable
 import ru.capjack.tool.utils.concurrency.DelayableAssistant
 import ru.capjack.tool.utils.concurrency.LivingWorker
+import ru.capjack.tool.utils.concurrency.ObjectPool
 import ru.capjack.tool.utils.concurrency.accessOrDeferOnLive
 import ru.capjack.tool.utils.concurrency.executeOnLive
 import ru.capjack.tool.utils.concurrency.withCaptureOnLive
@@ -25,6 +26,7 @@ import kotlin.jvm.Volatile
 abstract class InternalChannelImpl(
 	private var channel: Channel,
 	private var processor: ChannelProcessor,
+	private val byteBuffers: ObjectPool<ByteBuffer>,
 	assistant: DelayableAssistant,
 	activityTimeoutSeconds: Int
 ) : InternalChannel, ChannelHandler {
@@ -33,8 +35,8 @@ abstract class InternalChannelImpl(
 	
 	private val worker = LivingWorker(assistant, ::syncHandleError)
 	
-	private val inputBuffer = FramedArrayByteBuffer(64)
-	private val outputBuffer = ArrayByteBuffer(64)
+	private var inputBuffer = byteBuffers.take()
+	private var outputBuffer = byteBuffers.take()
 	
 	@Volatile
 	private var activity = true
@@ -152,7 +154,7 @@ abstract class InternalChannelImpl(
 			else {
 				logger.debug { "Activity timeout expired" }
 				activeChecker.cancel()
-				send(ProtocolMarker.SERVER_CLOSE_ACTIVITY_TIMEOUT)
+				send(ProtocolMarker.CLOSE_ACTIVITY_TIMEOUT)
 				syncClose(true)
 			}
 		}
@@ -167,9 +169,14 @@ abstract class InternalChannelImpl(
 		
 		loop@ while (worker.alive && inputBuffer.readable) {
 			when (processor.processChannelInput(this, inputBuffer)) {
-				ChannelProcessorInputResult.CONTINUE -> continue@loop
-				ChannelProcessorInputResult.BREAK    -> break@loop
+				ChannelProcessorInputResult.CONTINUE ->
+					continue@loop
+				ChannelProcessorInputResult.BREAK    -> {
+					inputBuffer.flush()
+					break@loop
+				}
 				ChannelProcessorInputResult.DEFER    -> {
+					inputBuffer.flush()
 					worker.defer(::syncProcessInput)
 					break@loop
 				}
@@ -212,8 +219,6 @@ abstract class InternalChannelImpl(
 		syncUseProcessor(NothingChannelProcessor)
 		
 		activeChecker.cancel()
-		inputBuffer.clear()
-		outputBuffer.clear()
 		channel.close()
 		
 		activeChecker = Cancelable.DUMMY
@@ -222,7 +227,12 @@ abstract class InternalChannelImpl(
 		
 		processClose()
 		
+		byteBuffers.back(inputBuffer)
+		byteBuffers.back(outputBuffer)
+		
 		channel = NothingChannel
+		inputBuffer = DummyByteBuffer
+		outputBuffer = DummyByteBuffer
 	}
 	
 	private fun syncHandleError(e: Throwable) {

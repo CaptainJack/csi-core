@@ -1,7 +1,7 @@
 package ru.capjack.csi.core.server._test
 
 import ru.capjack.csi.core.Connection
-import ru.capjack.csi.core.ConnectionHandler
+import ru.capjack.csi.core.server.ConnectionHandler
 import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.readToArray
@@ -79,7 +79,7 @@ class TestConnectionHandler(private val connection: Connection) : ConnectionHand
 				TestApiMarker.SEND_BUFFER -> {
 					val close = message.readByte() == 1.toByte()
 					val parallel = message.readByte() == 1.toByte()
-					val buffer = ArrayByteBuffer() { writeByte(7) }
+					val buffer = ArrayByteBuffer { writeByte(7) }
 					
 					if (parallel) {
 						thread { connection.sendMessage(buffer) }

@@ -1,9 +1,12 @@
 package ru.capjack.csi.core.common
 
-import ru.capjack.tool.io.ArrayByteBuffer
+import ru.capjack.tool.io.ByteBuffer
+import ru.capjack.tool.io.DummyByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
+import ru.capjack.tool.utils.concurrency.ObjectPool
 
 class OutgoingMessageBuffer(
+	private val byteBuffers: ObjectPool<ByteBuffer>,
 	private var nextMessageId: Int = 1
 ) : Iterable<OutgoingMessage> {
 	
@@ -60,7 +63,7 @@ class OutgoingMessageBuffer(
 		if (message != null) {
 			if (message.id == messageId) {
 				head = message.next
-				message.free()
+				message.clear()
 				cache.add(message)
 			}
 			else {
@@ -73,7 +76,7 @@ class OutgoingMessageBuffer(
 					
 					while (message != null) {
 						val prev = message.prev
-						message.free()
+						message.clear()
 						cache.add(message)
 						message = prev
 					}
@@ -91,14 +94,24 @@ class OutgoingMessageBuffer(
 		}
 	}
 	
-	fun clear() {
+	fun dispose() {
+		var current = head
+		while (current != null) {
+			val next = current.next
+			current.dispose(byteBuffers)
+			current = next
+		}
+		
+		cache.forEach { it.dispose(byteBuffers) }
+		cache.clear()
+		
 		head = null
 		tail = null
 	}
 	
 	private fun provideMessage(): Message {
 		val message =
-			if (cache.isEmpty()) Message()
+			if (cache.isEmpty()) Message(byteBuffers.take())
 			else cache.removeAt(cache.lastIndex)
 		
 		message.id = nextMessageId++
@@ -115,12 +128,10 @@ class OutgoingMessageBuffer(
 		return message
 	}
 	
-	private class Message : OutgoingMessage {
+	private class Message(override var data: ByteBuffer) : OutgoingMessage {
 		var prev: Message? = null
 		var next: Message? = null
 		override var size: Int = 0
-		
-		override val data = ArrayByteBuffer()
 		
 		override var id: Int = 0
 			set(value) {
@@ -137,12 +148,18 @@ class OutgoingMessageBuffer(
 			data.backRead(size - data.readableSize)
 		}
 		
-		fun free() {
+		fun clear() {
 			id = 0
 			size = 0
 			next = null
 			prev = null
 			data.clear()
+		}
+		
+		fun dispose(byteBuffers: ObjectPool<ByteBuffer>) {
+			clear()
+			byteBuffers.back(data)
+			data = DummyByteBuffer
 		}
 	}
 }

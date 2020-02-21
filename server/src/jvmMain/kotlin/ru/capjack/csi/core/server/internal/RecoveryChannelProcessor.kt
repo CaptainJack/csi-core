@@ -5,14 +5,14 @@ import ru.capjack.csi.core.common.ChannelProcessorInputResult
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.common.ProtocolMarker
 import ru.capjack.csi.core.common.TransitionChannelProcessor
-import ru.capjack.tool.io.FramedInputByteBuffer
+import ru.capjack.tool.io.InputByteBuffer
 
 internal class RecoveryChannelProcessor(
 	private val acceptor: ConnectionRecoveryAcceptor
 ) : ChannelProcessor {
 	
-	override fun processChannelInput(channel: InternalChannel, buffer: FramedInputByteBuffer): ChannelProcessorInputResult {
-		return if (buffer.isReadable(4 + 8)) {
+	override fun processChannelInput(channel: InternalChannel, buffer: InputByteBuffer): ChannelProcessorInputResult {
+		return if (buffer.isReadable(8 + 4)) {
 			val sessionId = buffer.readLong()
 			val lastSentMessageId = buffer.readInt()
 			

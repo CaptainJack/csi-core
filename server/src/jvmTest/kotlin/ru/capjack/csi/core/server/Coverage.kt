@@ -6,7 +6,6 @@ import ru.capjack.csi.core.common.NothingChannelProcessor
 import ru.capjack.csi.core.common.NothingInternalChannel
 import ru.capjack.csi.core.common.TransitionChannelProcessor
 import ru.capjack.tool.io.ArrayByteBuffer
-import ru.capjack.tool.io.FramedArrayByteBuffer
 import kotlin.test.Test
 
 class Coverage {
@@ -18,12 +17,12 @@ class Coverage {
 	
 	@Test(ProtocolBrokenException::class)
 	fun `TransitionChannelProcessor processChannelInput`() {
-		TransitionChannelProcessor.processChannelInput(NothingInternalChannel, FramedArrayByteBuffer())
+		TransitionChannelProcessor.processChannelInput(NothingInternalChannel, ArrayByteBuffer(0))
 	}
 	
 	@Test(UnsupportedOperationException::class)
 	fun `NothingChannelProcessor processChannelInput`() {
-		NothingChannelProcessor.processChannelInput(NothingInternalChannel, FramedArrayByteBuffer())
+		NothingChannelProcessor.processChannelInput(NothingInternalChannel, ArrayByteBuffer(0))
 	}
 	
 	@Test(UnsupportedOperationException::class)

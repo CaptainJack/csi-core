@@ -1,7 +1,6 @@
 package ru.capjack.csi.core.common
 
 import ru.capjack.tool.io.InputByteBuffer
-import ru.capjack.tool.logging.Logger
 
 object NothingInternalChannel : InternalChannel {
 	override val id: Any

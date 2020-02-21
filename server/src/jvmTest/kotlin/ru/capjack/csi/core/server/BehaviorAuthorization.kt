@@ -7,7 +7,7 @@ import kotlin.test.Test
 class BehaviorAuthorization {
 	@Test
 	fun `Invalid version with split message`() {
-		server {
+		server(version = 5) {
 			channel {
 				sendData {
 					writeByte(0x10)
@@ -67,7 +67,7 @@ class BehaviorAuthorization {
 				receiveData("53")
 				receiveClose()
 			}
-			waitIf(1000) { server.connectionsAmount == 0 }
+			waitIf(1000) { server.connections == 0 }
 			channel {
 				authorization(1)
 				sendClose()

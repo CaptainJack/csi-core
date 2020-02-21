@@ -28,6 +28,7 @@ inline fun server(
 	val gateway = TestChannelGate(errors)
 	val server = Server(
 		assistant(2, "server"),
+		GLOBAL_BYTE_BUFFER_POOL,
 		TestConnectionAuthorizer(),
 		TestConnectionAcceptor(),
 		gateway,
@@ -50,8 +51,8 @@ inline fun server(
 			"Not all channels closed\n" + gateway.channels.filterNot(TestChannel::completed).joinToString("\n", transform = TestChannel::state)
 		}
 		
-		assertEquals(0, server.channelsAmount)
-		assertEquals(0, server.connectionsAmount)
+		assertEquals(0, server.channels)
+		assertEquals(0, server.connections)
 		assertFalse(server.running)
 	}
 	

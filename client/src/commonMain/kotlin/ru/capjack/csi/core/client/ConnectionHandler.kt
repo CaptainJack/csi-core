@@ -1,8 +1,8 @@
 package ru.capjack.csi.core.client
 
-import ru.capjack.csi.core.ConnectionHandler
+import ru.capjack.csi.core.BaseConnectionHandler
 
-interface ClientConnectionHandler : ConnectionHandler {
+interface ConnectionHandler : BaseConnectionHandler {
 	fun handleConnectionLost(): ConnectionRecoveryHandler
 	
 	fun handleConnectionCloseTimeout(seconds: Int)
