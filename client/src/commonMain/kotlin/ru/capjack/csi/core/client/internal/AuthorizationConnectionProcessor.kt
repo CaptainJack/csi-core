@@ -28,7 +28,7 @@ internal class AuthorizationConnectionProcessor(
 	}
 	
 	override fun processChannelInput(channel: Channel, buffer: InputByteBuffer): Boolean {
-		throw ProtocolBrokenException()
+		throw ProtocolBrokenException("Not expected incoming data")
 	}
 	
 	override fun processChannelInterrupt(connection: InternalConnection): ConnectionProcessor {

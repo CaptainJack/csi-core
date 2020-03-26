@@ -128,38 +128,43 @@ class OutgoingMessageBuffer(
 		return message
 	}
 	
-	private class Message(override var data: ByteBuffer) : OutgoingMessage {
+	private class Message(data: ByteBuffer) : OutgoingMessage {
+		private var _data: ByteBuffer = data
+		private var _size: Int = 0
+		
 		var prev: Message? = null
 		var next: Message? = null
-		override var size: Int = 0
+		
+		override val data get() = _data
+		override val size get() = _size
 		
 		override var id: Int = 0
 			set(value) {
 				field = value
-				data.writeByte(ProtocolMarker.MESSAGING_NEW)
-				data.writeInt(id)
+				_data.writeByte(ProtocolMarker.MESSAGING_NEW)
+				_data.writeInt(id)
 			}
 		
 		fun commit() {
-			size = data.readableSize
+			_size = _data.readableSize
 		}
 		
 		fun reset() {
-			data.backRead(size - data.readableSize)
+			_data.backRead(_size - _data.readableSize)
 		}
 		
 		fun clear() {
 			id = 0
-			size = 0
+			_size = 0
 			next = null
 			prev = null
-			data.clear()
+			_data.clear()
 		}
 		
 		fun dispose(byteBuffers: ObjectPool<ByteBuffer>) {
 			clear()
-			byteBuffers.back(data)
-			data = DummyByteBuffer
+			byteBuffers.back(_data)
+			_data = DummyByteBuffer
 		}
 	}
 }

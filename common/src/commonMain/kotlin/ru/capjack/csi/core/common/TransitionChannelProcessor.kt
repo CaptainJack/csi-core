@@ -5,7 +5,7 @@ import ru.capjack.tool.io.InputByteBuffer
 
 object TransitionChannelProcessor : ChannelProcessor {
 	override fun processChannelInput(channel: InternalChannel, buffer: InputByteBuffer): ChannelProcessorInputResult {
-		throw ProtocolBrokenException()
+		throw ProtocolBrokenException("Not expected incoming data")
 	}
 	
 	override fun processChannelClose(channel: InternalChannel, interrupted: Boolean) {

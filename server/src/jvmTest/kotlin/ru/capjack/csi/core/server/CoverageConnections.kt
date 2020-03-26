@@ -181,7 +181,7 @@ class CoverageConnections {
 		
 		
 		val identities = Connections::class.java.getDeclaredField("identities")
-		identities.trySetAccessible()
+		identities.isAccessible = true
 		@Suppress("UNCHECKED_CAST")
 		(identities.get(connections) as MutableMap<Long, Int>)[2] = 1
 		
