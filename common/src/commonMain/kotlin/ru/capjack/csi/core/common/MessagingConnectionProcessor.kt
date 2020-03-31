@@ -104,7 +104,7 @@ abstract class MessagingConnectionProcessor<H : BaseConnectionHandler>(
 			val size = buffer.readInt()
 			
 			if (buffer.isReadable(size)) {
-				logger.trace { "Receive message id $inputMessageId of ${buffer.readableSize}B" }
+				logger.trace { "Receive message id $inputMessageId of ${size}B" }
 				
 				acceptReceivedMessageId(inputMessageId)
 				inputState = InputState.MARKER

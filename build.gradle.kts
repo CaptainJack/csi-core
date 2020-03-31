@@ -10,7 +10,7 @@ depver {
 	"ru.capjack.tool" {
 		"tool-lang"("1.2.0")
 		"tool-utils"("0.9.0")
-		"tool-io"("0.6.0")
+		"tool-io"("0.6.1")
 	}
 	"ch.qos.logback:logback-classic"("1.2.3")
 }

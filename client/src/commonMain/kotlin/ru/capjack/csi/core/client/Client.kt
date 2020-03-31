@@ -17,7 +17,18 @@ class Client(
 ) {
 	fun connect(authorizationKey: ByteArray, connectionAcceptor: ConnectionAcceptor) {
 		ownLogger.trace { formatLoggerMessageBytes("Connect with authorization key ", authorizationKey) }
-		gate.openChannel(AuthorizationChannelAcceptor(assistant, byteBuffers, gate, version, authorizationKey, connectionAcceptor, activityTimeoutSeconds))
+		
+		gate.openChannel(
+			AuthorizationChannelAcceptor(
+				assistant,
+				byteBuffers,
+				gate,
+				version,
+				authorizationKey,
+				connectionAcceptor,
+				activityTimeoutSeconds
+			)
+		)
 	}
 }
 

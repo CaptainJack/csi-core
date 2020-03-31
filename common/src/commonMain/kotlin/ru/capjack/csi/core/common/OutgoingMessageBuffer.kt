@@ -35,24 +35,24 @@ class OutgoingMessageBuffer(
 	
 	fun add(data: Byte): OutgoingMessage {
 		return provideMessage().also {
-			it.data.writeInt(1)
-			it.data.writeByte(data)
+			it._data.writeInt(1)
+			it._data.writeByte(data)
 			it.commit()
 		}
 	}
 	
 	fun add(data: ByteArray): OutgoingMessage {
 		return provideMessage().also {
-			it.data.writeInt(data.size)
-			it.data.writeArray(data)
+			it._data.writeInt(data.size)
+			it._data.writeArray(data)
 			it.commit()
 		}
 	}
 	
 	fun add(data: InputByteBuffer): OutgoingMessage {
 		return provideMessage().also {
-			it.data.writeInt(data.readableSize)
-			it.data.writeBuffer(data)
+			it._data.writeInt(data.readableSize)
+			it._data.writeBuffer(data)
 			it.commit()
 		}
 	}
@@ -129,14 +129,14 @@ class OutgoingMessageBuffer(
 	}
 	
 	private class Message(data: ByteBuffer) : OutgoingMessage {
-		private var _data: ByteBuffer = data
-		private var _size: Int = 0
+		var _data: ByteBuffer = data
+		private var _dataSize: Int = 0
 		
 		var prev: Message? = null
 		var next: Message? = null
 		
 		override val data get() = _data
-		override val size get() = _size
+		override val size get() = _dataSize - 1 - 4 - 4
 		
 		override var id: Int = 0
 			set(value) {
@@ -146,16 +146,16 @@ class OutgoingMessageBuffer(
 			}
 		
 		fun commit() {
-			_size = _data.readableSize
+			_dataSize = _data.readableSize
 		}
 		
 		fun reset() {
-			_data.backRead(_size - _data.readableSize)
+			_data.backRead(_dataSize - _data.readableSize)
 		}
 		
 		fun clear() {
 			id = 0
-			_size = 0
+			_dataSize = 0
 			next = null
 			prev = null
 			_data.clear()
