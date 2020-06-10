@@ -13,13 +13,15 @@ internal class VersionValidatorChannelProcessor(
 	
 	override fun processChannelInput(channel: InternalChannel, buffer: InputByteBuffer): ChannelProcessorInputResult {
 		if (buffer.isReadable(4)) {
+			/* TODO: Legacy <
 			val clientVersion = buffer.readInt()
 			
 			if (clientVersion < serverVersion) {
 				channel.closeWithMarker(ProtocolMarker.SERVER_CLOSE_VERSION)
 				return ChannelProcessorInputResult.BREAK
 			}
-			
+			> Legacy
+			*/
 			channel.useProcessor(authorization)
 			return ChannelProcessorInputResult.CONTINUE
 		}

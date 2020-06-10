@@ -9,6 +9,7 @@ import ru.capjack.csi.core.common.ProtocolMarker
 import ru.capjack.csi.core.server.ConnectionHandler
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.putInt
+import ru.capjack.tool.io.putLong
 import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.utils.concurrency.DelayableAssistant
 
@@ -17,14 +18,23 @@ internal class ServerMessagingConnectionProcessor(
 	messages: Messages,
 	logger: Logger,
 	private val assistant: DelayableAssistant,
-	private val activityTimeoutSeconds: Int
+	private val activityTimeoutSeconds: Int,
+	private val connectionId: Long // TODO Legacy
 ) : MessagingConnectionProcessor<ConnectionHandler>(handler, messages, logger) {
 	
 	override fun doProcessConnectionRecovery(channel: Channel): ConnectionProcessor {
+		channel.send(ByteArray(1 + 1 + 4 + 8).apply {
+			set(0, ProtocolMarker.RECOVERY)
+			set(1, 4 + 8)
+			putInt(1 + 1, lastIncomingMessageId)
+			putLong(1 + 1 + 4, connectionId)
+		})
+		//
+		/* TODO Legacy
 		channel.send(ByteArray(1 + 4).apply {
 			set(0, ProtocolMarker.RECOVERY)
 			putInt(1, lastIncomingMessageId)
-		})
+		})*/
 		return this
 	}
 	

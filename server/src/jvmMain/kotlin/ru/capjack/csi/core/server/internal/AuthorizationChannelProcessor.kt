@@ -13,6 +13,27 @@ internal class AuthorizationChannelProcessor<I : Any>(
 ) : ChannelProcessor {
 	
 	override fun processChannelInput(channel: InternalChannel, buffer: InputByteBuffer): ChannelProcessorInputResult {
+		if (buffer.isReadable(1)) {
+			val size = buffer.readByte().toInt() and 0xFF
+			if (buffer.isReadable(size)) {
+				val clientId = authorizer.authorizeConnection(buffer)
+				
+				if (clientId == null) {
+					channel.closeWithMarker(ProtocolMarker.SERVER_CLOSE_AUTHORIZATION)
+					return ChannelProcessorInputResult.BREAK
+				}
+				
+				val processor = acceptor.acceptAuthorization(channel, clientId)
+				
+				channel.useProcessor(processor)
+				return ChannelProcessorInputResult.CONTINUE
+			}
+			else {
+				buffer.backRead(1)
+			}
+		}
+		
+		/* TODO Legacy
 		if (buffer.isReadable(4)) {
 			val size = buffer.readInt()
 			if (buffer.isReadable(size)) {
@@ -32,6 +53,7 @@ internal class AuthorizationChannelProcessor<I : Any>(
 				buffer.backRead(4)
 			}
 		}
+		*/
 		
 		return ChannelProcessorInputResult.BREAK
 	}
