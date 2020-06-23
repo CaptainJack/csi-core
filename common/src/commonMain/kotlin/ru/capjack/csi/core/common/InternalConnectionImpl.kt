@@ -21,12 +21,12 @@ import ru.capjack.tool.utils.concurrency.executeOnLive
 import ru.capjack.tool.utils.concurrency.withCapture
 
 abstract class InternalConnectionImpl(
-	override val id: Long,
+	final override val id: Long,
 	private var channel: InternalChannel,
 	private var processor: ConnectionProcessor,
 	assistant: DelayableAssistant,
 	byteBuffers: ObjectPool<ByteBuffer>,
-	loggingName: String
+	final override val loggingName: String
 ) : InternalConnection, ChannelProcessor {
 	
 	override val logger: Logger = ownLogger.wrap("[$loggingName] ")

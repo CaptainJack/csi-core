@@ -4,6 +4,7 @@ import ru.capjack.tool.io.InputByteBuffer
 
 interface Connection {
 	val id: Long
+	val loggingName: String
 	
 	fun sendMessage(data: Byte)
 	

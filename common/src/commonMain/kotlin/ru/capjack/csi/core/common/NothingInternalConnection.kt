@@ -7,6 +7,9 @@ object NothingInternalConnection : InternalConnection {
 	override val id: Long
 		get() = throw UnsupportedOperationException()
 	
+	override val loggingName: String
+		get() = "NothingInternal"
+	
 	override val logger: Logger
 		get() = throw UnsupportedOperationException()
 	

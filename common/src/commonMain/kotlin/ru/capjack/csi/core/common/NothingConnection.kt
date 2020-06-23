@@ -7,6 +7,9 @@ object NothingConnection : Connection {
 	override val id: Long
 		get() = 0
 	
+	override val loggingName: String
+		get() = "Nothing"
+	
 	override fun sendMessage(data: Byte) {
 		throw UnsupportedOperationException()
 	}
