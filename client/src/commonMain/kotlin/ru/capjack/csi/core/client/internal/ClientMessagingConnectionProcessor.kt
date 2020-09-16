@@ -10,8 +10,8 @@ import ru.capjack.csi.core.common.MessagingConnectionProcessor
 import ru.capjack.csi.core.common.ProtocolMarker
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
-import ru.capjack.tool.lang.alsoElse
-import ru.capjack.tool.lang.alsoIf
+import ru.capjack.tool.lang.alsoFalse
+import ru.capjack.tool.lang.alsoTrue
 import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.utils.Cancelable
 import ru.capjack.tool.utils.concurrency.DelayableAssistant
@@ -64,11 +64,11 @@ internal class ClientMessagingConnectionProcessor(
 			}
 			ProtocolMarker.SERVER_SHUTDOWN_TIMEOUT -> {
 				buffer.isReadable(4)
-					.alsoIf {
+					.alsoTrue {
 						val shutdownTimeoutSeconds = buffer.readInt()
 						handler.handleConnectionCloseTimeout(shutdownTimeoutSeconds)
 					}
-					.alsoElse {
+					.alsoFalse {
 						buffer.backRead(1)
 					}
 			}

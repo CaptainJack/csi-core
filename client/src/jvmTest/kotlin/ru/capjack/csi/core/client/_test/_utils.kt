@@ -13,8 +13,8 @@ import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
 
-inline fun waitIfSecond(check: () -> Boolean): Boolean {
-	return waitIf(1000, check = check)
+inline fun waitIfSecond(condition: () -> Boolean): Boolean {
+	return waitIf(1000, condition = condition)
 }
 
 fun assistant(size: Int = 1, name: String = "test"): DelayableAssistant {

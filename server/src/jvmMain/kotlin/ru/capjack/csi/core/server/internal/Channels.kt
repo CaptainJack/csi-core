@@ -8,7 +8,7 @@ import ru.capjack.csi.core.server.ChannelAcceptor
 import ru.capjack.csi.core.server.ConnectionAuthorizer
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.putInt
-import ru.capjack.tool.lang.waitIfImmediately
+import ru.capjack.tool.lang.waitIfLater
 import ru.capjack.tool.logging.info
 import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
@@ -84,7 +84,7 @@ internal class Channels<I : Any>(
 				message.putInt(1, shutdownTimeoutSeconds)
 				channels.forEach { it.send(message) }
 				
-				waitIfImmediately(shutdownTimeoutSeconds * 1000, 100) { _size.get() != 0 }
+				waitIfLater(shutdownTimeoutSeconds * 1000, 100) { _size.get() != 0 }
 			}
 			
 			if (_size.get() != 0) {
@@ -94,7 +94,7 @@ internal class Channels<I : Any>(
 					it.closeWithMarker(ProtocolMarker.SERVER_CLOSE_SHUTDOWN)
 				}
 				
-				if (waitIfImmediately(stopTimeoutSeconds * 1000) { _size.get() != 0 }) {
+				if (waitIfLater(stopTimeoutSeconds * 1000) { _size.get() != 0 }) {
 					logger.warn { "Not all channels closed, $size left, ignore them" }
 					channels.clear()
 				}

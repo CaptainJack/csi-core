@@ -12,28 +12,6 @@ internal class RecoveryChannelProcessor(
 ) : ChannelProcessor {
 	
 	override fun processChannelInput(channel: InternalChannel, buffer: InputByteBuffer): ChannelProcessorInputResult {
-		return if (buffer.isReadable(1 + 4 + 8)) {
-			buffer.skipRead(1)
-			val lastSentMessageId = buffer.readInt()
-			val connectionId = buffer.readLong()
-			
-			val connection = acceptor.acceptRecovery(connectionId)
-			
-			if (connection == null) {
-				channel.closeWithMarker(ProtocolMarker.SERVER_CLOSE_RECOVERY_FAIL)
-				ChannelProcessorInputResult.BREAK
-			}
-			else {
-				channel.useProcessor(TransitionChannelProcessor)
-				connection.recovery(channel, lastSentMessageId)
-				ChannelProcessorInputResult.CONTINUE
-			}
-		}
-		else {
-			ChannelProcessorInputResult.BREAK
-		}
-		
-		/* TODO Legacy
 		return if (buffer.isReadable(8 + 4)) {
 			val connectionId = buffer.readLong()
 			val lastSentMessageId = buffer.readInt()
@@ -53,7 +31,6 @@ internal class RecoveryChannelProcessor(
 		else {
 			ChannelProcessorInputResult.BREAK
 		}
-		*/
 	}
 	
 	override fun processChannelClose(channel: InternalChannel, interrupted: Boolean) {}

@@ -7,7 +7,7 @@ import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.DummyByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.readToArray
-import ru.capjack.tool.lang.alsoElse
+import ru.capjack.tool.lang.alsoFalse
 import ru.capjack.tool.lang.make
 import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.logging.debug
@@ -126,7 +126,7 @@ abstract class InternalChannelImpl(
 		worker.withCaptureOnLive {
 			inputBuffer.writeBuffer(data)
 			syncProcessInput()
-		} alsoElse {
+		} alsoFalse {
 			val array = data.readToArray()
 			
 			worker.executeOnLive {

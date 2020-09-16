@@ -1,17 +1,17 @@
 plugins {
 	kotlin("multiplatform")
 	id("ru.capjack.bintray")
-	id("ru.capjack.logging")
 	jacoco
 }
 
 kotlin {
 	jvm()
-	js()
+	js(IR) {
+		browser()
+	}
 	
 	sourceSets {
 		get("commonMain").dependencies {
-			implementation(kotlin("stdlib-common"))
 			implementation("ru.capjack.tool:tool-lang")
 			implementation("ru.capjack.tool:tool-logging")
 			api(project(":csi-core-common"))
@@ -23,21 +23,16 @@ kotlin {
 		
 		get("jvmMain").dependencies {
 			implementation(kotlin("reflect"))
-			implementation(kotlin("stdlib-jdk8"))
 		}
 		get("jvmTest").dependencies {
 			implementation(kotlin("test-junit"))
 			implementation("ch.qos.logback:logback-classic")
 		}
-		
-		get("jsMain").dependencies {
-			implementation(kotlin("stdlib-js"))
-		}
 	}
 }
 
 jacoco {
-	toolVersion = "0.8.5"
+	toolVersion = "0.8.6"
 }
 
 tasks.register<JacocoReport>("jvmTestCodeCoverageReport") {

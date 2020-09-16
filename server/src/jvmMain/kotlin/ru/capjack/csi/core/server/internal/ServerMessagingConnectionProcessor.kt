@@ -18,23 +18,14 @@ internal class ServerMessagingConnectionProcessor(
 	messages: Messages,
 	logger: Logger,
 	private val assistant: DelayableAssistant,
-	private val activityTimeoutSeconds: Int,
-	private val connectionId: Long // TODO Legacy
+	private val activityTimeoutSeconds: Int
 ) : MessagingConnectionProcessor<ConnectionHandler>(handler, messages, logger) {
 	
 	override fun doProcessConnectionRecovery(channel: Channel): ConnectionProcessor {
-		channel.send(ByteArray(1 + 1 + 4 + 8).apply {
-			set(0, ProtocolMarker.RECOVERY)
-			set(1, 4 + 8)
-			putInt(1 + 1, lastIncomingMessageId)
-			putLong(1 + 1 + 4, connectionId)
-		})
-		//
-		/* TODO Legacy
 		channel.send(ByteArray(1 + 4).apply {
 			set(0, ProtocolMarker.RECOVERY)
 			putInt(1, lastIncomingMessageId)
-		})*/
+		})
 		return this
 	}
 	

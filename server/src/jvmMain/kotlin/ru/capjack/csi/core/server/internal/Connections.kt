@@ -6,7 +6,7 @@ import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.server.ConnectionAcceptor
 import ru.capjack.csi.core.server.ConnectionRegistry
 import ru.capjack.tool.io.ByteBuffer
-import ru.capjack.tool.lang.waitIfImmediately
+import ru.capjack.tool.lang.waitIfLater
 import ru.capjack.tool.logging.info
 import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
@@ -89,7 +89,7 @@ internal class Connections<I : Any>(
 			
 			connections.values.forEach(Connection::close)
 			
-			if (waitIfImmediately(stopTimeoutSeconds * 1000) { _size.get() != 0 }) {
+			if (waitIfLater(stopTimeoutSeconds * 1000) { _size.get() != 0 }) {
 				logger.warn { "Not all connections closed, $size left, ignore them" }
 				connections.clear()
 			}

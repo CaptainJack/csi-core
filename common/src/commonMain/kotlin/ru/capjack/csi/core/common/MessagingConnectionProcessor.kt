@@ -5,8 +5,8 @@ import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.ProtocolBrokenException
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.SubInputByteBuffer
-import ru.capjack.tool.lang.alsoIf
-import ru.capjack.tool.lang.lefIf
+import ru.capjack.tool.lang.alsoTrue
+import ru.capjack.tool.lang.lefTrue
 import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.logging.trace
 
@@ -92,7 +92,7 @@ abstract class MessagingConnectionProcessor<H : BaseConnectionHandler>(
 	}
 	
 	private fun processChannelInputMessageId(buffer: InputByteBuffer): Boolean {
-		return buffer.isReadable(4).lefIf {
+		return buffer.isReadable(4).lefTrue {
 			inputMessageId = buffer.readInt()
 			inputState = InputState.MESSAGE_BODY
 			processChannelInputMessageBody(buffer)
@@ -131,7 +131,7 @@ abstract class MessagingConnectionProcessor<H : BaseConnectionHandler>(
 	}
 	
 	private fun processChannelInputMessageReceived(buffer: InputByteBuffer): Boolean {
-		return alsoIf(buffer.isReadable(4)) {
+		return alsoTrue(buffer.isReadable(4)) {
 			val messageId = buffer.readInt()
 			
 			logger.trace { "Outgoing message $messageId is delivered" }
