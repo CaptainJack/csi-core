@@ -1,7 +1,7 @@
 package ru.capjack.csi.core.server._test
 
 import ru.capjack.tool.utils.Cancelable
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
+import ru.capjack.tool.utils.assistant.DelayableAssistant
 
 object FakeDelayableAssistant : DelayableAssistant {
 	override fun execute(code: () -> Unit) {}

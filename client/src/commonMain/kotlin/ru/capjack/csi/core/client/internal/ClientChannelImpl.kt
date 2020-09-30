@@ -4,8 +4,8 @@ import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.common.ChannelProcessor
 import ru.capjack.csi.core.common.InternalChannelImpl
 import ru.capjack.tool.io.ByteBuffer
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
-import ru.capjack.tool.utils.concurrency.ObjectPool
+import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.pool.ObjectPool
 
 internal class ClientChannelImpl(
 	channel: Channel,

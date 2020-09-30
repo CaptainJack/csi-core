@@ -2,7 +2,6 @@ include(
 	"common",
 	"client",
 	"server"
-//	"test"
 )
 
 rootProject.name = "csi-core"

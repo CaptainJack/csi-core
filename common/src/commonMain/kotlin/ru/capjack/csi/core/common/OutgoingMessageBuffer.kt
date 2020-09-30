@@ -3,7 +3,7 @@ package ru.capjack.csi.core.common
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.DummyByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
-import ru.capjack.tool.utils.concurrency.ObjectPool
+import ru.capjack.tool.utils.pool.ObjectPool
 
 class OutgoingMessageBuffer(
 	private val byteBuffers: ObjectPool<ByteBuffer>,

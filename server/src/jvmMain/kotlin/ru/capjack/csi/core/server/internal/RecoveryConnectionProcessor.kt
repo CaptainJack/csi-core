@@ -7,7 +7,7 @@ import ru.capjack.csi.core.common.InternalConnection
 import ru.capjack.csi.core.common.NothingConnectionProcessor
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.utils.Cancelable
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
+import ru.capjack.tool.utils.assistant.DelayableAssistant
 
 internal class RecoveryConnectionProcessor(
 	private var messagingProcessor: ConnectionProcessor,

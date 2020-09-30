@@ -5,10 +5,10 @@ import ru.capjack.csi.core.server.internal.Connections
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.utils.Closeable
+import ru.capjack.tool.utils.Sluice
 import ru.capjack.tool.utils.Stoppable
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
-import ru.capjack.tool.utils.concurrency.ObjectPool
-import ru.capjack.tool.utils.concurrency.Sluice
+import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.pool.ObjectPool
 import kotlin.random.Random
 
 class Server<I : Any>(

@@ -10,7 +10,7 @@ import ru.capjack.csi.core.server.internal.Channels
 import ru.capjack.csi.core.server.internal.ConnectionAuthorizationAcceptor
 import ru.capjack.csi.core.server.internal.ConnectionRecoveryAcceptor
 import ru.capjack.csi.core.server.internal.ServerConnection
-import ru.capjack.tool.utils.concurrency.Sluice
+import ru.capjack.tool.utils.Sluice
 
 class CoverageChannels {
 	@Test(expected = IllegalArgumentException::class)

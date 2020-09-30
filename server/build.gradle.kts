@@ -18,9 +18,6 @@ kotlin {
 			implementation(kotlin("test-annotations-common"))
 		}
 		
-		get("jvmMain").dependencies {
-			implementation(kotlin("stdlib-jdk8"))
-		}
 		get("jvmTest").dependencies {
 			implementation(kotlin("test-junit"))
 			implementation("ch.qos.logback:logback-classic")

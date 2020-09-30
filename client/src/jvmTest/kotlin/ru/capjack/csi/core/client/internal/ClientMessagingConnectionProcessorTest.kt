@@ -18,7 +18,7 @@ import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.lang.waitIf
 import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.utils.Cancelable
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
+import ru.capjack.tool.utils.assistant.DelayableAssistant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

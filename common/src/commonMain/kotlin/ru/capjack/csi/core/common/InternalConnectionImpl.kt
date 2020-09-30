@@ -12,13 +12,13 @@ import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
 import ru.capjack.tool.logging.warn
 import ru.capjack.tool.logging.wrap
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
-import ru.capjack.tool.utils.concurrency.LivingWorker
-import ru.capjack.tool.utils.concurrency.ObjectPool
-import ru.capjack.tool.utils.concurrency.accessOrDefer
-import ru.capjack.tool.utils.concurrency.accessOrDeferOnLive
-import ru.capjack.tool.utils.concurrency.executeOnLive
-import ru.capjack.tool.utils.concurrency.withCapture
+import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.pool.ObjectPool
+import ru.capjack.tool.utils.worker.LivingWorker
+import ru.capjack.tool.utils.worker.accessOrDefer
+import ru.capjack.tool.utils.worker.accessOrDeferOnLive
+import ru.capjack.tool.utils.worker.executeOnLive
+import ru.capjack.tool.utils.worker.withCapture
 
 abstract class InternalConnectionImpl(
 	final override val id: Long,

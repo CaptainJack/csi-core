@@ -15,12 +15,12 @@ import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
 import ru.capjack.tool.logging.wrap
 import ru.capjack.tool.utils.Cancelable
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
-import ru.capjack.tool.utils.concurrency.LivingWorker
-import ru.capjack.tool.utils.concurrency.ObjectPool
-import ru.capjack.tool.utils.concurrency.accessOrDeferOnLive
-import ru.capjack.tool.utils.concurrency.executeOnLive
-import ru.capjack.tool.utils.concurrency.withCaptureOnLive
+import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.pool.ObjectPool
+import ru.capjack.tool.utils.worker.LivingWorker
+import ru.capjack.tool.utils.worker.accessOrDeferOnLive
+import ru.capjack.tool.utils.worker.executeOnLive
+import ru.capjack.tool.utils.worker.withCaptureOnLive
 import kotlin.jvm.Volatile
 
 abstract class InternalChannelImpl(

@@ -6,8 +6,8 @@ import ru.capjack.csi.core.common.InternalConnectionImpl
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.lang.toHexString
 import ru.capjack.tool.lang.waitIf
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
-import ru.capjack.tool.utils.concurrency.ObjectPool
+import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.pool.ObjectPool
 
 internal class ServerConnectionImpl<I : Any>(
 	id: Long,

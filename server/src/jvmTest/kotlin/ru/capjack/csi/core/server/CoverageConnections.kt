@@ -10,7 +10,7 @@ import ru.capjack.csi.core.server._test.NowDelayableAssistant
 import ru.capjack.csi.core.server._test.TestConnectionAcceptor
 import ru.capjack.csi.core.server.internal.Connections
 import ru.capjack.tool.io.InputByteBuffer
-import ru.capjack.tool.utils.concurrency.ExecutorDelayableAssistant
+import ru.capjack.tool.utils.assistant.ExecutorDelayableAssistant
 import java.util.concurrent.Executors
 import kotlin.random.Random
 import kotlin.test.assertNull

@@ -5,8 +5,8 @@ import ru.capjack.csi.core.common.formatLoggerMessageBytes
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
-import ru.capjack.tool.utils.concurrency.ObjectPool
+import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.pool.ObjectPool
 
 class Client(
 	private val assistant: DelayableAssistant,

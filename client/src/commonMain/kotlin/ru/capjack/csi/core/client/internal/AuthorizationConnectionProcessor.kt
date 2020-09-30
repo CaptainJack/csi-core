@@ -8,8 +8,8 @@ import ru.capjack.csi.core.common.ConnectionProcessor
 import ru.capjack.csi.core.common.InternalConnection
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
-import ru.capjack.tool.utils.concurrency.ObjectPool
+import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.pool.ObjectPool
 
 internal class AuthorizationConnectionProcessor(
 	private val assistant: DelayableAssistant,

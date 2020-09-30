@@ -14,7 +14,7 @@ import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.lang.EMPTY_FUNCTION_0
 import ru.capjack.tool.lang.waitIf
 import ru.capjack.tool.utils.Cancelable
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
+import ru.capjack.tool.utils.assistant.DelayableAssistant
 import java.lang.Thread.sleep
 import kotlin.test.Test
 import kotlin.test.assertFailsWith

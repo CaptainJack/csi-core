@@ -9,9 +9,8 @@ import ru.capjack.csi.core.common.ProtocolMarker
 import ru.capjack.csi.core.server.ConnectionHandler
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.putInt
-import ru.capjack.tool.io.putLong
 import ru.capjack.tool.logging.Logger
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
+import ru.capjack.tool.utils.assistant.DelayableAssistant
 
 internal class ServerMessagingConnectionProcessor(
 	handler: ConnectionHandler,

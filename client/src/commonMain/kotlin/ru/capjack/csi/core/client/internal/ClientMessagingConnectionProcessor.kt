@@ -14,8 +14,8 @@ import ru.capjack.tool.lang.alsoFalse
 import ru.capjack.tool.lang.alsoTrue
 import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.utils.Cancelable
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
-import ru.capjack.tool.utils.concurrency.ObjectPool
+import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.pool.ObjectPool
 
 internal class ClientMessagingConnectionProcessor(
 	handler: ConnectionHandler,

@@ -6,8 +6,8 @@ import ru.capjack.tool.io.OutputByteBuffer
 import ru.capjack.tool.io.readToArray
 import ru.capjack.tool.lang.toHexString
 import ru.capjack.tool.lang.waitIf
-import ru.capjack.tool.utils.concurrency.DelayableAssistant
-import ru.capjack.tool.utils.concurrency.ExecutorDelayableAssistant
+import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.ExecutorDelayableAssistant
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger
