@@ -31,4 +31,8 @@ object NothingServerChannel : ServerChannel {
 	override fun useProcessor(processor: ChannelProcessor) {
 		throw UnsupportedOperationException()
 	}
+	
+	override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {
+		throw UnsupportedOperationException()
+	}
 }

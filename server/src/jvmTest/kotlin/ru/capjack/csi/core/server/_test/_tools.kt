@@ -131,8 +131,9 @@ class ChannelActions(private val channel: TestChannel) {
 			writeInt(clientId)
 		}
 		receiveData("10")
-		receiveDataRead(8) {
+		receiveDataRead(8 + 4) {
 			connectionId = readLong()
+			readInt()
 		}
 		
 		assertNotEquals(0, connectionId)

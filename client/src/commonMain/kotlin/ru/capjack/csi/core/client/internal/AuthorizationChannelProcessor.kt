@@ -16,15 +16,15 @@ internal class AuthorizationChannelProcessor(
 	private val assistant: DelayableAssistant,
 	private val byteBuffers: ObjectPool<ByteBuffer>,
 	private val gate: ChannelGate,
-	private var acceptor: ConnectionAcceptor,
-	private val activityTimeoutSeconds: Int
+	private var acceptor: ConnectionAcceptor
 ) : ChannelProcessor {
 	
 	override fun processChannelInput(channel: InternalChannel, buffer: InputByteBuffer): ChannelProcessorInputResult {
 		val marker = buffer.readByte()
 		if (marker == ProtocolMarker.AUTHORIZATION) {
-			if (buffer.isReadable(8)) {
+			if (buffer.isReadable(8 + 4)) {
 				val connectionId = buffer.readLong()
+				val activityTimeoutSeconds = buffer.readInt()
 				val connection = ClientConnectionImpl(
 					connectionId,
 					channel,
@@ -33,7 +33,7 @@ internal class AuthorizationChannelProcessor(
 					byteBuffers
 				)
 				acceptor = NothingConnectionAcceptor()
-				channel.useProcessor(connection)
+				channel.useProcessor(connection, activityTimeoutSeconds)
 				connection.accept()
 				return ChannelProcessorInputResult.CONTINUE
 			}

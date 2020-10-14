@@ -8,7 +8,7 @@ plugins {
 depver {
 	"ru.capjack.tool" {
 		"tool-lang"("1.5.0")
-		"tool-utils"("0.15.0")
+		"tool-utils"("0.16.0")
 		"tool-io"("0.7.0")
 		"tool-logging"("1.2.0")
 	}

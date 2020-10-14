@@ -28,13 +28,13 @@ class AuthorizationChannelProcessorTest {
 		}
 		
 		val channel = FnInternalChannel()
-		val processor = AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor, 1)
+		val processor = AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor)
 		val buffer = buffer {}
 		
 		buffer.write("10  00 00 00 00 00")
 		processor.processChannelInput(channel, buffer)
 		
-		buffer.write("00 00 07")
+		buffer.write("00 00 07  00 00 00 01")
 		processor.processChannelInput(channel, buffer)
 		
 		waitIfSecond { connectionId == null }
@@ -56,7 +56,7 @@ class AuthorizationChannelProcessorTest {
 		
 		val channel = FnInternalChannel(close = { actualClosed = true })
 		
-		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor, 1)
+		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor)
 			.processChannelInput(channel, buffer("50"))
 		
 		assertEquals(ConnectFailReason.VERSION, actualReason)
@@ -76,7 +76,7 @@ class AuthorizationChannelProcessorTest {
 		
 		val channel = FnInternalChannel(close = { actualClosed = true })
 		
-		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor, 1)
+		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor)
 			.processChannelInput(channel, buffer("51"))
 		
 		assertEquals(ConnectFailReason.AUTHORIZATION, actualReason)
@@ -96,7 +96,7 @@ class AuthorizationChannelProcessorTest {
 		
 		val channel = FnInternalChannel(close = { actualClosed = true })
 		
-		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor, 1)
+		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor)
 			.processChannelInput(channel, buffer("54"))
 		
 		assertEquals(ConnectFailReason.REFUSED, actualReason)
@@ -116,7 +116,7 @@ class AuthorizationChannelProcessorTest {
 		
 		val channel = FnInternalChannel(close = { actualClosed = true })
 		
-		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor, 1)
+		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor)
 			.processChannelInput(channel, buffer("32"))
 		
 		assertEquals(ConnectFailReason.ERROR, actualReason)
@@ -136,7 +136,7 @@ class AuthorizationChannelProcessorTest {
 		
 		val channel = FnInternalChannel(close = { actualClosed = true })
 		
-		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor, 1)
+		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor)
 			.processChannelInput(channel, buffer("31"))
 		
 		assertEquals(ConnectFailReason.ERROR, actualReason)
@@ -160,7 +160,7 @@ class AuthorizationChannelProcessorTest {
 			close = { actualClosed = true }
 		)
 		
-		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor, 1)
+		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor)
 			.processChannelInput(channel, buffer("40"))
 		
 		assertEquals(ConnectFailReason.REFUSED, actualReason)
@@ -185,7 +185,7 @@ class AuthorizationChannelProcessorTest {
 			close = { actualClosed = true }
 		)
 		
-		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor, 1)
+		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor)
 			.processChannelInput(channel, buffer("77"))
 		
 		assertEquals(ConnectFailReason.ERROR, actualReason)
@@ -203,7 +203,7 @@ class AuthorizationChannelProcessorTest {
 			}
 		}
 		
-		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor, 1)
+		AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor)
 			.processChannelClose(NothingInternalChannel, true)
 		
 		assertEquals(ConnectFailReason.REFUSED, actualReason)
@@ -221,7 +221,7 @@ class AuthorizationChannelProcessorTest {
 		
 		val channel = FnInternalChannel()
 		
-		val processor = AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor, 1)
+		val processor = AuthorizationChannelProcessor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, acceptor)
 		channel.useProcessor(processor)
 		processor.processChannelInput(channel, buffer("30"))
 		

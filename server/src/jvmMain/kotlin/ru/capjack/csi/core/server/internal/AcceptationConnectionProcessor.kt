@@ -7,6 +7,7 @@ import ru.capjack.csi.core.common.InternalConnection
 import ru.capjack.csi.core.common.ProtocolMarker
 import ru.capjack.csi.core.server.ConnectionAcceptor
 import ru.capjack.tool.io.InputByteBuffer
+import ru.capjack.tool.io.putInt
 import ru.capjack.tool.io.putLong
 import ru.capjack.tool.utils.assistant.DelayableAssistant
 
@@ -18,9 +19,10 @@ internal class AcceptationConnectionProcessor<I : Any>(
 ) : ConnectionProcessor {
 	
 	override fun processConnectionAccept(channel: Channel, connection: InternalConnection): ConnectionProcessor {
-		channel.send(ByteArray(1 + 8).apply {
+		channel.send(ByteArray(1 + 8 + 4).apply {
 			set(0, ProtocolMarker.AUTHORIZATION)
 			putLong(1, connection.id)
+			putInt(1 + 8, activityTimeoutSeconds)
 		})
 		
 		val handler = connectionAcceptor.acceptConnection(identity, connection)

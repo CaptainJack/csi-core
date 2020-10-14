@@ -26,8 +26,8 @@ import kotlin.jvm.Volatile
 abstract class InternalChannelImpl(
 	private var channel: Channel,
 	private var processor: ChannelProcessor,
-	private val byteBuffers: ObjectPool<ByteBuffer>,
-	assistant: DelayableAssistant,
+	private var byteBuffers: ObjectPool<ByteBuffer>,
+	private var assistant: DelayableAssistant,
 	activityTimeoutSeconds: Int
 ) : InternalChannel, ChannelHandler {
 	
@@ -109,6 +109,17 @@ abstract class InternalChannelImpl(
 		}
 	}
 	
+	override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {
+		if (worker.accessible && worker.alive) {
+			syncUseProcessor(processor)
+			activeChecker.cancel()
+			activeChecker = assistant.repeat(activityTimeoutSeconds * 1000, ::checkActivity)
+		}
+		else {
+			throw IllegalStateException()
+		}
+	}
+	
 	override fun closeWithMarker(marker: Byte) {
 		logger.trace { "Schedule close with marker ${ProtocolMarker.toString(marker)}" }
 		
@@ -171,11 +182,11 @@ abstract class InternalChannelImpl(
 			when (processor.processChannelInput(this, inputBuffer)) {
 				ChannelProcessorInputResult.CONTINUE ->
 					continue@loop
-				ChannelProcessorInputResult.BREAK    -> {
+				ChannelProcessorInputResult.BREAK -> {
 					inputBuffer.flush()
 					break@loop
 				}
-				ChannelProcessorInputResult.DEFER    -> {
+				ChannelProcessorInputResult.DEFER -> {
 					inputBuffer.flush()
 					worker.defer(::syncProcessInput)
 					break@loop
@@ -233,6 +244,9 @@ abstract class InternalChannelImpl(
 		channel = NothingChannel
 		inputBuffer = DummyByteBuffer
 		outputBuffer = DummyByteBuffer
+		
+		byteBuffers = NothingByteBufferPool
+		assistant = NothingDelayableAssistant
 	}
 	
 	private fun syncHandleError(e: Throwable) {

@@ -78,6 +78,8 @@ class CoverageConnections {
 			
 			override fun useProcessor(processor: ChannelProcessor) {}
 			
+			override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {}
+			
 			override fun closeWithMarker(marker: Byte) {}
 			
 			override fun send(data: Byte) {}
@@ -112,6 +114,8 @@ class CoverageConnections {
 			
 			override fun useProcessor(processor: ChannelProcessor) {}
 			
+			override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {}
+			
 			override fun closeWithMarker(marker: Byte) {
 				connections.acceptRecovery(2)
 			}
@@ -124,6 +128,8 @@ class CoverageConnections {
 					override val id: Any = 1
 					
 					override fun useProcessor(processor: ChannelProcessor) {}
+					
+					override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {}
 					
 					override fun closeWithMarker(marker: Byte) {}
 					
@@ -165,6 +171,8 @@ class CoverageConnections {
 			override val id: Any = 1
 			
 			override fun useProcessor(processor: ChannelProcessor) {}
+			
+			override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {}
 			
 			override fun closeWithMarker(marker: Byte) {}
 			

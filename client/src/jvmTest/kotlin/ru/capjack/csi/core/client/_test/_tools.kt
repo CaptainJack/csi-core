@@ -56,6 +56,10 @@ open class FnInternalChannel(
 		this.processor = processor
 	}
 	
+	override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {
+		this.processor = processor
+	}
+	
 	override fun closeWithMarker(marker: Byte) {
 		send(marker)
 		close()

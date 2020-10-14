@@ -10,6 +10,9 @@ object EmptyInternalChannel : InternalChannel {
 	override fun useProcessor(processor: ChannelProcessor) {
 	}
 	
+	override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {
+	}
+	
 	override fun closeWithMarker(marker: Byte) {
 	}
 	

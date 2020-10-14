@@ -20,16 +20,16 @@ internal class AuthorizationChannelAcceptor(
 	private val clientVersion: Int,
 	private val authorizationKey: ByteArray,
 	private val acceptor: ConnectionAcceptor,
-	private val activityTimeoutSeconds: Int
+	private val authorizationTimeoutSeconds: Int
 ) : ChannelAcceptor {
 	
 	override fun acceptChannel(channel: Channel): ChannelHandler {
 		val clientChannel = ClientChannelImpl(
 			channel,
-			AuthorizationChannelProcessor(assistant, byteBuffers, gate, acceptor, activityTimeoutSeconds),
+			AuthorizationChannelProcessor(assistant, byteBuffers, gate, acceptor),
 			assistant,
 			byteBuffers,
-			activityTimeoutSeconds
+			authorizationTimeoutSeconds
 		)
 		
 		clientChannel.send(ByteArray(1 + 4 + 4 + authorizationKey.size).also {

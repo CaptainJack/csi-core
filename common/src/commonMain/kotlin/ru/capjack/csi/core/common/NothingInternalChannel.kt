@@ -26,6 +26,10 @@ object NothingInternalChannel : InternalChannel {
 		throw UnsupportedOperationException()
 	}
 	
+	override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {
+		throw UnsupportedOperationException()
+	}
+	
 	override fun closeWithMarker(marker: Byte) {
 		throw UnsupportedOperationException()
 	}
