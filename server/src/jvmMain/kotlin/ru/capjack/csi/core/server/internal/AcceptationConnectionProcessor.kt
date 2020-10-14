@@ -19,15 +19,26 @@ internal class AcceptationConnectionProcessor<I : Any>(
 ) : ConnectionProcessor {
 	
 	override fun processConnectionAccept(channel: Channel, connection: InternalConnection): ConnectionProcessor {
+		/*
 		channel.send(ByteArray(1 + 8 + 4).apply {
 			set(0, ProtocolMarker.AUTHORIZATION)
 			putLong(1, connection.id)
 			putInt(1 + 8, activityTimeoutSeconds)
+		})*/
+		
+		//TODO Legacy
+		channel.send(ByteArray(1 + 4 + 4 + 1 + 8).apply {
+			set(0, ProtocolMarker.AUTHORIZATION)
+			putInt(1, activityTimeoutSeconds)
+			putInt(1 + 4, activityTimeoutSeconds * 2)
+			set(1 + 4 + 4, 8)
+			putLong(1 + 4 + 4 + 1, connection.id)
 		})
+		//
 		
 		val handler = connectionAcceptor.acceptConnection(identity, connection)
 		
-		return ServerMessagingConnectionProcessor(handler, connection.messages, connection.logger, assistant, activityTimeoutSeconds)
+		return ServerMessagingConnectionProcessor(handler, connection.messages, connection.logger, assistant, activityTimeoutSeconds, connection.id)
 	}
 	
 	override fun processConnectionRecovery(channel: Channel): ConnectionProcessor {
