@@ -7,8 +7,10 @@ import ru.capjack.csi.core.common.ChannelProcessor
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
+import java.time.Clock
 
 val GLOBAL_ASSISTANT = assistant(8, "global")
+val GLOBAL_CLOCK = Clock.systemDefaultZone()
 
 inline fun gate(crossinline code: ChannelAcceptor.() -> Unit): ChannelGate {
 	return object : ChannelGate {

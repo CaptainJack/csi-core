@@ -9,10 +9,10 @@ import ru.capjack.csi.core.server.ConnectionAcceptor
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.putInt
 import ru.capjack.tool.io.putLong
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 
 internal class AcceptationConnectionProcessor<I : Any>(
-	private val assistant: DelayableAssistant,
+	private val assistant: TemporalAssistant,
 	private val connectionAcceptor: ConnectionAcceptor<I>,
 	private val activityTimeoutSeconds: Int,
 	private val identity: I

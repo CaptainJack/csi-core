@@ -6,8 +6,8 @@ import ru.capjack.tool.io.OutputByteBuffer
 import ru.capjack.tool.io.readToArray
 import ru.capjack.tool.lang.toHexString
 import ru.capjack.tool.lang.waitIf
-import ru.capjack.tool.utils.assistant.DelayableAssistant
-import ru.capjack.tool.utils.assistant.ExecutorDelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
+import ru.capjack.tool.utils.assistant.ExecutorTemporalAssistant
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger
@@ -17,8 +17,8 @@ inline fun waitIfSecond(condition: () -> Boolean): Boolean {
 	return waitIf(1000, condition = condition)
 }
 
-fun assistant(size: Int = 1, name: String = "test"): DelayableAssistant {
-	return ExecutorDelayableAssistant(
+fun assistant(size: Int = 1, name: String = "test"): TemporalAssistant {
+	return ExecutorTemporalAssistant(
 		if (size == 1) {
 			Executors.newSingleThreadScheduledExecutor { r -> Thread(r, "assistant-$name") }
 		}

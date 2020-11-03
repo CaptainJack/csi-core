@@ -7,12 +7,12 @@ import ru.capjack.csi.core.common.InternalConnection
 import ru.capjack.csi.core.common.NothingConnectionProcessor
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.utils.Cancelable
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 
 internal class RecoveryConnectionProcessor(
 	private var messagingProcessor: ConnectionProcessor,
 	connection: Connection,
-	assistant: DelayableAssistant,
+	assistant: TemporalAssistant,
 	activityTimeoutSeconds: Int
 ) : ConnectionProcessor {
 	

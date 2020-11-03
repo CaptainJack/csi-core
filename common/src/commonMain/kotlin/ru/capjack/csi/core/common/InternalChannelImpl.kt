@@ -15,7 +15,7 @@ import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
 import ru.capjack.tool.logging.wrap
 import ru.capjack.tool.utils.Cancelable
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 import ru.capjack.tool.utils.pool.ObjectPool
 import ru.capjack.tool.utils.worker.LivingWorker
 import ru.capjack.tool.utils.worker.accessOrDeferOnLive
@@ -27,7 +27,7 @@ abstract class InternalChannelImpl(
 	private var channel: Channel,
 	private var processor: ChannelProcessor,
 	private var byteBuffers: ObjectPool<ByteBuffer>,
-	private var assistant: DelayableAssistant,
+	private var assistant: TemporalAssistant,
 	activityTimeoutSeconds: Int
 ) : InternalChannel, ChannelHandler {
 	
@@ -246,7 +246,7 @@ abstract class InternalChannelImpl(
 		outputBuffer = DummyByteBuffer
 		
 		byteBuffers = NothingByteBufferPool
-		assistant = NothingDelayableAssistant
+		assistant = NothingTemporalAssistant
 	}
 	
 	private fun syncHandleError(e: Throwable) {

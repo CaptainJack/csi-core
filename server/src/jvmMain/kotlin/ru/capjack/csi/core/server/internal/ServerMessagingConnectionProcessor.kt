@@ -11,13 +11,13 @@ import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.putInt
 import ru.capjack.tool.io.putLong
 import ru.capjack.tool.logging.Logger
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 
 internal class ServerMessagingConnectionProcessor(
 	handler: ConnectionHandler,
 	messages: Messages,
 	logger: Logger,
-	private val assistant: DelayableAssistant,
+	private val assistant: TemporalAssistant,
 	private val activityTimeoutSeconds: Int,
 	private val connectionId: Long //TODO Legacy
 ) : MessagingConnectionProcessor<ConnectionHandler>(handler, messages, logger) {

@@ -3,7 +3,7 @@ package ru.capjack.csi.core.server
 import org.junit.Test
 import ru.capjack.csi.core.common.ChannelProcessor
 import ru.capjack.csi.core.common.InternalChannel
-import ru.capjack.csi.core.server._test.FakeDelayableAssistant
+import ru.capjack.csi.core.server._test.FakeTemporalAssistant
 import ru.capjack.csi.core.server._test.GLOBAL_BYTE_BUFFER_POOL
 import ru.capjack.csi.core.server._test.TestConnectionAuthorizer
 import ru.capjack.csi.core.server.internal.Channels
@@ -18,7 +18,7 @@ class CoverageChannels {
 		Channels(
 			Sluice(false),
 			GLOBAL_BYTE_BUFFER_POOL,
-			FakeDelayableAssistant,
+			FakeTemporalAssistant,
 			1,
 			0,
 			1,
@@ -38,7 +38,7 @@ class CoverageChannels {
 		Channels(
 			Sluice(false),
 			GLOBAL_BYTE_BUFFER_POOL,
-			FakeDelayableAssistant,
+			FakeTemporalAssistant,
 			1,
 			1,
 			-1,
@@ -58,7 +58,7 @@ class CoverageChannels {
 		Channels(
 			Sluice(false),
 			GLOBAL_BYTE_BUFFER_POOL,
-			FakeDelayableAssistant,
+			FakeTemporalAssistant,
 			1,
 			1,
 			1,

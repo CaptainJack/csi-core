@@ -14,14 +14,14 @@ import ru.capjack.tool.lang.alsoFalse
 import ru.capjack.tool.lang.alsoTrue
 import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.utils.Cancelable
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 import ru.capjack.tool.utils.pool.ObjectPool
 
 internal class ClientMessagingConnectionProcessor(
 	handler: ConnectionHandler,
 	messages: Messages,
 	logger: Logger,
-	private val assistant: DelayableAssistant,
+	private val assistant: TemporalAssistant,
 	private val byteBuffers: ObjectPool<ByteBuffer>,
 	private val activityTimeoutSeconds: Int,
 	private val gate: ChannelGate,

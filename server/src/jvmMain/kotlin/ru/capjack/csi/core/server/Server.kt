@@ -7,12 +7,12 @@ import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.utils.Closeable
 import ru.capjack.tool.utils.Sluice
 import ru.capjack.tool.utils.Stoppable
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 import ru.capjack.tool.utils.pool.ObjectPool
 import kotlin.random.Random
 
 class Server<I : Any>(
-	assistant: DelayableAssistant,
+	assistant: TemporalAssistant,
 	byteBuffers: ObjectPool<ByteBuffer>,
 	connectionAuthorizer: ConnectionAuthorizer<I>,
 	connectionAcceptor: ConnectionAcceptor<I>,

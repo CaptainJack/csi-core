@@ -11,13 +11,13 @@ import ru.capjack.tool.logging.info
 import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
 import ru.capjack.tool.logging.warn
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 import ru.capjack.tool.utils.pool.ObjectPool
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
 internal class Connections<I : Any>(
-	private val assistant: DelayableAssistant,
+	private val assistant: TemporalAssistant,
 	private val byteBuffers: ObjectPool<ByteBuffer>,
 	private val acceptor: ConnectionAcceptor<I>,
 	private val activityTimeoutSeconds: Int,

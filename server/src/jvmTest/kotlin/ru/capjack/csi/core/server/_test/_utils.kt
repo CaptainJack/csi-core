@@ -2,14 +2,14 @@ package ru.capjack.csi.core.server._test
 
 import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.io.readToArray
-import ru.capjack.tool.utils.assistant.DelayableAssistant
-import ru.capjack.tool.utils.assistant.ExecutorDelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
+import ru.capjack.tool.utils.assistant.ExecutorTemporalAssistant
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger
 
-fun assistant(size: Int = 1, name: String = "test"): DelayableAssistant {
-	return ExecutorDelayableAssistant(
+fun assistant(size: Int = 1, name: String = "test"): TemporalAssistant {
+	return ExecutorTemporalAssistant(
 		if (size == 1) {
 			Executors.newSingleThreadScheduledExecutor { r -> Thread(r, "assistant-$name") }
 		}

@@ -18,7 +18,7 @@ import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.lang.waitIf
 import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.utils.Cancelable
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -41,7 +41,7 @@ class ClientMessagingConnectionProcessorTest {
 			override fun handleConnectionClose() {}
 		}
 		
-		val assistant = object : DelayableAssistant by GLOBAL_ASSISTANT {
+		val assistant = object : TemporalAssistant by GLOBAL_ASSISTANT {
 			override fun repeat(delayMillis: Int, code: () -> Unit): Cancelable {
 				return Cancelable { actualPingerStopped = true }
 			}
@@ -61,7 +61,7 @@ class ClientMessagingConnectionProcessorTest {
 	fun `When connection recovery then start pinger`() {
 		var actualPingerStarts = 0
 		
-		val assistant = object : DelayableAssistant by GLOBAL_ASSISTANT {
+		val assistant = object : TemporalAssistant by GLOBAL_ASSISTANT {
 			override fun repeat(delayMillis: Int, code: () -> Unit): Cancelable {
 				++actualPingerStarts
 				return Cancelable.DUMMY
@@ -81,7 +81,7 @@ class ClientMessagingConnectionProcessorTest {
 	fun `When connection recovery then stop pinger`() {
 		var actualPingerStopped = false
 		
-		val assistant = object : DelayableAssistant by GLOBAL_ASSISTANT {
+		val assistant = object : TemporalAssistant by GLOBAL_ASSISTANT {
 			override fun repeat(delayMillis: Int, code: () -> Unit): Cancelable {
 				return Cancelable { actualPingerStopped = true }
 			}

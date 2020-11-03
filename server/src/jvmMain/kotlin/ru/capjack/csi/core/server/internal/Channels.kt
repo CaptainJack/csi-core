@@ -14,7 +14,7 @@ import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
 import ru.capjack.tool.logging.warn
 import ru.capjack.tool.utils.Sluice
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 import ru.capjack.tool.utils.pool.ObjectPool
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger
 internal class Channels<I : Any>(
 	private val sluice: Sluice,
 	private val byteBuffers: ObjectPool<ByteBuffer>,
-	private val assistant: DelayableAssistant,
+	private val assistant: TemporalAssistant,
 	serverVersion: Int,
 	private val activityTimeoutSeconds: Int,
 	private val shutdownTimeoutSeconds: Int,

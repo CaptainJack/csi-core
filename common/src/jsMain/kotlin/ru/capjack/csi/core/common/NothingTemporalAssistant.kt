@@ -1,9 +1,9 @@
 package ru.capjack.csi.core.common
 
 import ru.capjack.tool.utils.Cancelable
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 
-object NothingDelayableAssistant : DelayableAssistant {
+actual object NothingTemporalAssistant : TemporalAssistant {
 	override fun charge(code: () -> Unit): Cancelable {
 		throw UnsupportedOperationException()
 	}

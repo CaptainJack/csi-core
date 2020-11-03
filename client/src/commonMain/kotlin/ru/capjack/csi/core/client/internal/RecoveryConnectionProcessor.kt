@@ -8,13 +8,13 @@ import ru.capjack.csi.core.common.InternalConnection
 import ru.capjack.csi.core.common.NothingConnectionProcessor
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 import ru.capjack.tool.utils.pool.ObjectPool
 
 internal class RecoveryConnectionProcessor(
 	private var messagingProcessor: ConnectionProcessor,
 	private var recoveryHandler: ConnectionRecoveryHandler,
-	assistant: DelayableAssistant,
+	assistant: TemporalAssistant,
 	byteBuffers: ObjectPool<ByteBuffer>,
 	gate: ChannelGate,
 	connection: InternalConnection,

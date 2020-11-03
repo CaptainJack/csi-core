@@ -12,7 +12,7 @@ import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace
 import ru.capjack.tool.logging.warn
 import ru.capjack.tool.logging.wrap
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 import ru.capjack.tool.utils.pool.ObjectPool
 import ru.capjack.tool.utils.worker.LivingWorker
 import ru.capjack.tool.utils.worker.accessOrDefer
@@ -24,7 +24,7 @@ abstract class InternalConnectionImpl(
 	final override val id: Long,
 	private var channel: InternalChannel,
 	private var processor: ConnectionProcessor,
-	assistant: DelayableAssistant,
+	assistant: TemporalAssistant,
 	byteBuffers: ObjectPool<ByteBuffer>,
 	final override val loggingName: String
 ) : InternalConnection, ChannelProcessor {

@@ -3,7 +3,7 @@ package ru.capjack.csi.core.server
 import ru.capjack.csi.core.common.NothingChannel
 import ru.capjack.csi.core.common.NothingConnectionProcessor
 import ru.capjack.csi.core.common.NothingInternalConnection
-import ru.capjack.csi.core.server._test.FakeDelayableAssistant
+import ru.capjack.csi.core.server._test.FakeTemporalAssistant
 import ru.capjack.csi.core.server._test.TestConnectionAcceptor
 import ru.capjack.csi.core.server.internal.AcceptationConnectionProcessor
 import ru.capjack.csi.core.server.internal.RecoveryConnectionProcessor
@@ -15,7 +15,7 @@ class CoverageConnectionProcessors {
 	@Test(expected = UnsupportedOperationException::class)
 	fun `AcceptationConnectionProcessor processConnectionRecovery`() {
 		AcceptationConnectionProcessor(
-			FakeDelayableAssistant,
+			FakeTemporalAssistant,
 			TestConnectionAcceptor(),
 			1,
 			1
@@ -27,7 +27,7 @@ class CoverageConnectionProcessors {
 		RecoveryConnectionProcessor(
 			NothingConnectionProcessor,
 			NothingInternalConnection,
-			FakeDelayableAssistant,
+			FakeTemporalAssistant,
 			1
 		).processConnectionAccept(
 			NothingChannel,
@@ -40,7 +40,7 @@ class CoverageConnectionProcessors {
 		RecoveryConnectionProcessor(
 			NothingConnectionProcessor,
 			NothingInternalConnection,
-			FakeDelayableAssistant,
+			FakeTemporalAssistant,
 			1
 		).processChannelInput(NothingChannel, ArrayByteBuffer(0))
 	}
@@ -50,7 +50,7 @@ class CoverageConnectionProcessors {
 		RecoveryConnectionProcessor(
 			NothingConnectionProcessor,
 			NothingInternalConnection,
-			FakeDelayableAssistant,
+			FakeTemporalAssistant,
 			1
 		).processChannelInterrupt(NothingInternalConnection)
 	}

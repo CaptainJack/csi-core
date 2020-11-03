@@ -4,14 +4,14 @@ import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.common.ChannelProcessor
 import ru.capjack.csi.core.common.InternalChannelImpl
 import ru.capjack.tool.io.ByteBuffer
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 import ru.capjack.tool.utils.pool.ObjectPool
 
 class ServerChannelImpl(
 	channel: Channel,
 	processor: ChannelProcessor,
 	byteBuffers: ObjectPool<ByteBuffer>,
-	assistant: DelayableAssistant,
+	assistant: TemporalAssistant,
 	activityTimeoutSeconds: Int,
 	private var releaser: ServerChannelReleaser
 ) : InternalChannelImpl(channel, processor, byteBuffers, assistant, activityTimeoutSeconds), ServerChannel {

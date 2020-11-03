@@ -4,13 +4,13 @@ import org.junit.Test
 import ru.capjack.csi.core.common.ChannelProcessor
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.common.NothingInternalChannel
-import ru.capjack.csi.core.server._test.FakeDelayableAssistant
+import ru.capjack.csi.core.server._test.FakeTemporalAssistant
 import ru.capjack.csi.core.server._test.GLOBAL_BYTE_BUFFER_POOL
-import ru.capjack.csi.core.server._test.NowDelayableAssistant
+import ru.capjack.csi.core.server._test.NowTemporalAssistant
 import ru.capjack.csi.core.server._test.TestConnectionAcceptor
 import ru.capjack.csi.core.server.internal.Connections
 import ru.capjack.tool.io.InputByteBuffer
-import ru.capjack.tool.utils.assistant.ExecutorDelayableAssistant
+import ru.capjack.tool.utils.assistant.ExecutorTemporalAssistant
 import java.util.concurrent.Executors
 import kotlin.random.Random
 import kotlin.test.assertNull
@@ -19,7 +19,7 @@ class CoverageConnections {
 	@Test(expected = IllegalArgumentException::class)
 	fun `Coverage bad activityTimeoutSeconds`() {
 		Connections(
-			FakeDelayableAssistant,
+			FakeTemporalAssistant,
 			GLOBAL_BYTE_BUFFER_POOL,
 			TestConnectionAcceptor(),
 			0,
@@ -32,7 +32,7 @@ class CoverageConnections {
 	@Test(expected = IllegalArgumentException::class)
 	fun `Coverage bad stopTimeoutSeconds`() {
 		Connections(
-			FakeDelayableAssistant,
+			FakeTemporalAssistant,
 			GLOBAL_BYTE_BUFFER_POOL,
 			TestConnectionAcceptor(),
 			1,
@@ -46,7 +46,7 @@ class CoverageConnections {
 	fun `Coverage connectionIdGenerator gives invalid ids`() {
 		val ids = mutableListOf<Long>(0, 1, 1, 2)
 		val connections = Connections(
-			FakeDelayableAssistant,
+			FakeTemporalAssistant,
 			GLOBAL_BYTE_BUFFER_POOL,
 			TestConnectionAcceptor(),
 			1,
@@ -64,7 +64,7 @@ class CoverageConnections {
 	@Test
 	fun `Coverage recovery connection on miss identity`() {
 		val connections = Connections(
-			NowDelayableAssistant,
+			NowTemporalAssistant,
 			GLOBAL_BYTE_BUFFER_POOL,
 			TestConnectionAcceptor(),
 			1,
@@ -100,7 +100,7 @@ class CoverageConnections {
 	fun `Coverage recovery connection on miss connection id`() {
 		var i = 0L
 		val connections = Connections(
-			ExecutorDelayableAssistant(Executors.newSingleThreadScheduledExecutor()),
+			ExecutorTemporalAssistant(Executors.newSingleThreadScheduledExecutor()),
 			GLOBAL_BYTE_BUFFER_POOL,
 			TestConnectionAcceptor(),
 			1,
@@ -158,7 +158,7 @@ class CoverageConnections {
 	fun `Coverage recovery connection on bad connection id`() {
 		var i = 0L
 		val connections = Connections(
-			ExecutorDelayableAssistant(Executors.newSingleThreadScheduledExecutor()),
+			ExecutorTemporalAssistant(Executors.newSingleThreadScheduledExecutor()),
 			GLOBAL_BYTE_BUFFER_POOL,
 			TestConnectionAcceptor(),
 			1,

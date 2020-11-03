@@ -8,11 +8,11 @@ import ru.capjack.csi.core.common.ProtocolMarker
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.putInt
 import ru.capjack.tool.io.putLong
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 import ru.capjack.tool.utils.pool.ObjectPool
 
 internal class RecoveryChannelAcceptor(
-	private val assistant: DelayableAssistant,
+	private val assistant: TemporalAssistant,
 	private val byteBuffers: ObjectPool<ByteBuffer>,
 	private val connection: InternalConnection,
 	private val activityTimeoutSeconds: Int,

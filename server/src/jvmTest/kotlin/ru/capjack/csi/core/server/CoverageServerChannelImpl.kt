@@ -14,8 +14,9 @@ import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.lang.EMPTY_FUNCTION_0
 import ru.capjack.tool.lang.waitIf
 import ru.capjack.tool.utils.Cancelable
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 import java.lang.Thread.sleep
+import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -31,7 +32,7 @@ class CoverageServerChannelImpl {
 			EmptyChannel,
 			EmptyChannelProcessor,
 			GLOBAL_BYTE_BUFFER_POOL,
-			object : DelayableAssistant {
+			object : TemporalAssistant {
 				override fun execute(code: () -> Unit) {}
 				
 				override fun repeat(delayMillis: Int, code: () -> Unit): Cancelable {
@@ -43,6 +44,9 @@ class CoverageServerChannelImpl {
 				
 				override fun charge(code: () -> Unit): Cancelable = Cancelable.DUMMY
 				
+				override fun repeat(delay: Long, unit: TimeUnit, code: () -> Unit): Cancelable = Cancelable.DUMMY
+				
+				override fun schedule(delay: Long, unit: TimeUnit, code: () -> Unit): Cancelable = Cancelable.DUMMY
 			},
 			1,
 			object : ServerChannelReleaser {

@@ -6,7 +6,7 @@ import ru.capjack.csi.core.common.InternalConnectionImpl
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.lang.toHexString
 import ru.capjack.tool.lang.waitIf
-import ru.capjack.tool.utils.assistant.DelayableAssistant
+import ru.capjack.tool.utils.assistant.TemporalAssistant
 import ru.capjack.tool.utils.pool.ObjectPool
 
 internal class ServerConnectionImpl<I : Any>(
@@ -14,7 +14,7 @@ internal class ServerConnectionImpl<I : Any>(
 	override val identity: I,
 	channel: InternalChannel,
 	processor: ConnectionProcessor,
-	assistant: DelayableAssistant,
+	assistant: TemporalAssistant,
 	byteBuffers: ObjectPool<ByteBuffer>,
 	private val releaser: ServerConnectionReleaser<I>
 ) : InternalConnectionImpl(

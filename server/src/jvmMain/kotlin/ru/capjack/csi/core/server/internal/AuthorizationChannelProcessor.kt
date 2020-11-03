@@ -6,6 +6,7 @@ import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.common.ProtocolMarker
 import ru.capjack.csi.core.server.ConnectionAuthorizer
 import ru.capjack.tool.io.InputByteBuffer
+import ru.capjack.tool.io.readToArray
 
 internal class AuthorizationChannelProcessor<I : Any>(
 	private val authorizer: ConnectionAuthorizer<I>,
@@ -16,7 +17,7 @@ internal class AuthorizationChannelProcessor<I : Any>(
 		/*if (buffer.isReadable(4)) {
 			val size = buffer.readInt()
 			if (buffer.isReadable(size)) {
-				val clientId = authorizer.authorizeConnection(buffer)
+				val clientId = authorizer.authorizeConnection(buffer.readToArray(size))
 				
 				if (clientId == null) {
 					channel.closeWithMarker(ProtocolMarker.SERVER_CLOSE_AUTHORIZATION)
@@ -37,7 +38,7 @@ internal class AuthorizationChannelProcessor<I : Any>(
 		if (buffer.isReadable(1)) {
 			val size = buffer.readByte().toInt() and 0xFF
 			if (buffer.isReadable(size)) {
-				val clientId = authorizer.authorizeConnection(buffer)
+				val clientId = authorizer.authorizeConnection(buffer.readToArray(size))
 				
 				if (clientId == null) {
 					channel.closeWithMarker(ProtocolMarker.SERVER_CLOSE_AUTHORIZATION)
