@@ -1,7 +1,7 @@
 package ru.capjack.csi.core.server._test
 
 import ru.capjack.tool.io.ArrayByteBuffer
-import ru.capjack.tool.io.readToArray
+import ru.capjack.tool.io.readArray
 import ru.capjack.tool.utils.assistant.TemporalAssistant
 import ru.capjack.tool.utils.assistant.ExecutorTemporalAssistant
 import java.util.concurrent.Executors
@@ -46,7 +46,7 @@ fun stringToByteBuffer(s: String): ArrayByteBuffer {
 }
 
 fun stringToByteArray(s: String): ByteArray {
-	return stringToByteBuffer(s).readToArray()
+	return stringToByteBuffer(s).readArray()
 }
 
 fun threadPoolFactory(name: String): ThreadFactory {

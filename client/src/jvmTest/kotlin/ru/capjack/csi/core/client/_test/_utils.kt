@@ -3,7 +3,7 @@ package ru.capjack.csi.core.client._test
 import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.OutputByteBuffer
-import ru.capjack.tool.io.readToArray
+import ru.capjack.tool.io.readArray
 import ru.capjack.tool.lang.toHexString
 import ru.capjack.tool.lang.waitIf
 import ru.capjack.tool.utils.assistant.TemporalAssistant
@@ -55,7 +55,7 @@ fun stringToByteBuffer(s: String): ArrayByteBuffer {
 }
 
 fun stringToByteArray(s: String): ByteArray {
-	return stringToByteBuffer(s).readToArray()
+	return stringToByteBuffer(s).readArray()
 }
 
 fun threadPoolFactory(name: String): ThreadFactory {
@@ -75,7 +75,7 @@ fun assertEqualsBytes(expected: String, actual: ByteArray?, message: String? = n
 }
 
 fun assertEqualsBytes(expected: String, actual: InputByteBuffer, message: String? = null) {
-	assertEqualsBytes(expected, actual.readToArray(), message)
+	assertEqualsBytes(expected, actual.readArray(), message)
 }
 
 inline fun buffer(data: OutputByteBuffer.() -> Unit): ArrayByteBuffer {

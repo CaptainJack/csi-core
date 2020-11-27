@@ -6,8 +6,8 @@ import ru.capjack.csi.core.ProtocolBrokenException
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.DummyByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
-import ru.capjack.tool.io.readToArray
-import ru.capjack.tool.lang.alsoFalse
+import ru.capjack.tool.io.readArray
+import ru.capjack.tool.lang.alsoElse
 import ru.capjack.tool.lang.make
 import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.logging.debug
@@ -77,7 +77,7 @@ abstract class InternalChannelImpl(
 				outputBuffer.writeBuffer(data)
 			}
 			else {
-				data.readToArray().also { bytes ->
+				data.readArray().also { bytes ->
 					worker.defer {
 						if (worker.alive) {
 							logger.debug { formatLoggerMessageBytes("Send ", bytes) }
@@ -137,8 +137,8 @@ abstract class InternalChannelImpl(
 		worker.withCaptureOnLive {
 			inputBuffer.writeBuffer(data)
 			syncProcessInput()
-		} alsoFalse {
-			val array = data.readToArray()
+		} alsoElse {
+			val array = data.readArray()
 			
 			worker.executeOnLive {
 				inputBuffer.writeArray(array)

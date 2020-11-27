@@ -7,7 +7,7 @@ import ru.capjack.csi.core.client._test.GLOBAL_BYTE_BUFFER_POOL
 import ru.capjack.csi.core.client._test.assertEqualsBytes
 import ru.capjack.csi.core.client._test.gate
 import ru.capjack.csi.core.client._test.waitIfSecond
-import ru.capjack.tool.io.readToArray
+import ru.capjack.tool.io.readArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -36,7 +36,7 @@ class AuthorizationChannelAcceptorTest {
 		
 		AuthorizationChannelAcceptor(GLOBAL_ASSISTANT, GLOBAL_BYTE_BUFFER_POOL, gate {}, 7, byteArrayOf(0x42), acceptor, 1)
 			.acceptChannel(FnChannel({
-				data = readToArray()
+				data = readArray()
 			}))
 		
 		waitIfSecond { data == null }

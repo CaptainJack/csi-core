@@ -4,7 +4,7 @@ import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.ChannelHandler
 import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
-import ru.capjack.tool.io.readToArray
+import ru.capjack.tool.io.readArray
 import ru.capjack.tool.lang.toHexString
 import ru.capjack.tool.lang.waitIf
 import java.util.concurrent.BlockingQueue
@@ -128,9 +128,9 @@ class TestChannel(
 				fail(
 					"""
 						Invalid received data on channel $id
-						  previous: ${fullReceivedData.readToArray().toHexString(' ')}
-						  expected: ${expected.readToArray().toHexString(' ')}
-						  actual  : ${actual.readToArray().toHexString(' ')}
+						  previous: ${fullReceivedData.readArray().toHexString(' ')}
+						  expected: ${expected.readArray().toHexString(' ')}
+						  actual  : ${actual.readArray().toHexString(' ')}
 						  
 						""".trimIndent()
 				)
@@ -162,7 +162,7 @@ class TestChannel(
 				continue
 			}
 			assertTrue(change is Change.Data)
-			actual.writeArray(change.data.readToArray(size.coerceAtMost(change.data.readableSize)))
+			actual.writeArray(change.data.readArray(size.coerceAtMost(change.data.readableSize)))
 			if (!change.data.readable) {
 				input.take()
 			}
@@ -190,7 +190,7 @@ class TestChannel(
 	
 	sealed class Change {
 		class Data(val data: InputByteBuffer) : Change() {
-			private val raw = data.readToArray()
+			private val raw = data.readArray()
 			
 			init {
 				data.backRead(raw.size)

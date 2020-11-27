@@ -3,7 +3,7 @@ package ru.capjack.csi.core
 import ru.capjack.csi.core.common.OutgoingMessageBuffer
 import ru.capjack.csi.core.common.ProtocolMarker
 import ru.capjack.tool.io.ArrayByteBuffer
-import ru.capjack.tool.io.readToArray
+import ru.capjack.tool.io.readArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -139,7 +139,7 @@ class OutgoingMessageBufferTest {
 		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL, 42)
 		
 		val data: Byte = 0x0F
-		val bytes = buffer.add(data).data.readToArray().toList()
+		val bytes = buffer.add(data).data.readArray().toList()
 		
 		val expected = listOf(
 			ProtocolMarker.MESSAGING_NEW,
@@ -156,7 +156,7 @@ class OutgoingMessageBufferTest {
 		val buffer = OutgoingMessageBuffer(GLOBAL_BYTE_BUFFER_POOL, 42)
 		
 		val data = byteArrayOf(0x0F, 0x77)
-		val bytes = buffer.add(data).data.readToArray().toList()
+		val bytes = buffer.add(data).data.readArray().toList()
 		
 		val expected = listOf(
 			ProtocolMarker.MESSAGING_NEW,
@@ -175,7 +175,7 @@ class OutgoingMessageBufferTest {
 		val data = ArrayByteBuffer {
 			writeInt(10266)
 		}
-		val bytes = buffer.add(data).data.readToArray().toList()
+		val bytes = buffer.add(data).data.readArray().toList()
 		
 		val expected = listOf(
 			ProtocolMarker.MESSAGING_NEW,
@@ -197,7 +197,7 @@ class OutgoingMessageBufferTest {
 		
 		val m2 = buffer.add(0x06)
 		
-		val bytes = m2.data.readToArray().toList()
+		val bytes = m2.data.readArray().toList()
 		val expected = listOf(
 			ProtocolMarker.MESSAGING_NEW,
 			0x00, 0x00, 0x00, 0x2B,
@@ -216,18 +216,18 @@ class OutgoingMessageBufferTest {
 		val m1 = buffer.add(0)
 		
 		assertTrue(m1.data.readable)
-		val bytes = m1.data.readToArray().toList()
+		val bytes = m1.data.readArray().toList()
 		assertFalse(m1.data.readable)
 		
 		buffer.forEach {
 			assertTrue(it.data.readable)
-			assertEquals(bytes, it.data.readToArray().toList())
+			assertEquals(bytes, it.data.readArray().toList())
 			assertFalse(it.data.readable)
 		}
 		
 		buffer.forEach {
 			assertTrue(it.data.readable)
-			assertEquals(bytes, it.data.readToArray().toList())
+			assertEquals(bytes, it.data.readArray().toList())
 			assertFalse(it.data.readable)
 		}
 	}

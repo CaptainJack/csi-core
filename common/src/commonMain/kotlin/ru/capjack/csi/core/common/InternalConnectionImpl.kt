@@ -3,7 +3,7 @@ package ru.capjack.csi.core.common
 import ru.capjack.csi.core.ProtocolBrokenException
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
-import ru.capjack.tool.io.readToArray
+import ru.capjack.tool.io.readArray
 import ru.capjack.tool.lang.EMPTY_FUNCTION_0
 import ru.capjack.tool.lang.make
 import ru.capjack.tool.logging.Logger
@@ -105,7 +105,7 @@ abstract class InternalConnectionImpl(
 				syncSendMessage(messages.outgoing.add(data))
 			}
 			else {
-				data.readToArray().also { bytes ->
+				data.readArray().also { bytes ->
 					worker.defer {
 						if (worker.alive) {
 							syncSendMessage(messages.outgoing.add(bytes))
@@ -184,19 +184,17 @@ abstract class InternalConnectionImpl(
 		logger.trace { "Process channel ${channel.id} close ${interrupted.make("interrupted", "definitely")}" }
 		
 		worker.executeOnLive {
-			if (worker.alive) {
-				if (this.channel == channel) {
-					if (interrupted) {
-						syncUseProcessor(processor.processChannelInterrupt(this))
-					}
-					else {
-						logger.debug("Close definitely")
-						syncTerminate()
-					}
+			if (this.channel == channel) {
+				if (interrupted) {
+					syncUseProcessor(processor.processChannelInterrupt(this))
 				}
 				else {
-					logger.trace { "Process close skipped with wrong channel" }
+					logger.debug("Close definitely")
+					syncTerminate()
 				}
+			}
+			else {
+				logger.trace { "Process close skipped with wrong channel" }
 			}
 		}
 	}

@@ -34,26 +34,20 @@ class OutgoingMessageBuffer(
 	}
 	
 	fun add(data: Byte): OutgoingMessage {
-		return provideMessage().also {
-			it._data.writeInt(1)
-			it._data.writeByte(data)
-			it.commit()
+		return provideMessage(1).also {
+			it.data.writeByte(data)
 		}
 	}
 	
 	fun add(data: ByteArray): OutgoingMessage {
-		return provideMessage().also {
-			it._data.writeInt(data.size)
-			it._data.writeArray(data)
-			it.commit()
+		return provideMessage(data.size).also {
+			it.data.writeArray(data)
 		}
 	}
 	
 	fun add(data: InputByteBuffer): OutgoingMessage {
-		return provideMessage().also {
-			it._data.writeInt(data.readableSize)
-			it._data.writeBuffer(data)
-			it.commit()
+		return provideMessage(data.readableSize).also {
+			it.data.writeBuffer(data)
 		}
 	}
 	
@@ -109,12 +103,12 @@ class OutgoingMessageBuffer(
 		tail = null
 	}
 	
-	private fun provideMessage(): Message {
+	private fun provideMessage(size: Int): Message {
 		val message =
 			if (cache.isEmpty()) Message(byteBuffers.take())
 			else cache.removeAt(cache.lastIndex)
 		
-		message.id = nextMessageId++
+		message.prepare(nextMessageId++, size)
 		
 		if (head == null) {
 			head = message
@@ -128,43 +122,41 @@ class OutgoingMessageBuffer(
 		return message
 	}
 	
-	private class Message(data: ByteBuffer) : OutgoingMessage {
-		var _data: ByteBuffer = data
-		private var _dataSize: Int = 0
+	private class Message(
+		override var data: ByteBuffer
+	) : OutgoingMessage {
+		
+		override var id = 0
+		override var size = 0
 		
 		var prev: Message? = null
 		var next: Message? = null
 		
-		override val data get() = _data
-		override val size get() = _dataSize - 1 - 4 - 4
-		
-		override var id: Int = 0
-			set(value) {
-				field = value
-				_data.writeByte(ProtocolMarker.MESSAGING_NEW)
-				_data.writeInt(id)
-			}
-		
-		fun commit() {
-			_dataSize = _data.readableSize
+		fun prepare(id: Int, size: Int) {
+			this.id = id
+			this.size = size
+			
+			data.writeByte(ProtocolMarker.MESSAGING_NEW)
+			data.writeInt(id)
+			data.writeInt(size)
 		}
 		
 		fun reset() {
-			_data.backRead(_dataSize - _data.readableSize)
+			data.backRead((size + 1 + 4 + 4) - data.readableSize)
 		}
 		
 		fun clear() {
 			id = 0
-			_dataSize = 0
+			size = 0
 			next = null
 			prev = null
-			_data.clear()
+			data.clear()
 		}
 		
 		fun dispose(byteBuffers: ObjectPool<ByteBuffer>) {
 			clear()
-			byteBuffers.back(_data)
-			_data = DummyByteBuffer
+			byteBuffers.back(data)
+			data = DummyByteBuffer
 		}
 	}
 }

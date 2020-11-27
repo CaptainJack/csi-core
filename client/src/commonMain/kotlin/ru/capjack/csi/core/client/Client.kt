@@ -13,10 +13,12 @@ class Client(
 	private val byteBuffers: ObjectPool<ByteBuffer>,
 	private val gate: ChannelGate,
 	private val version: Int = 0,
-	private val activityTimeoutSeconds: Int = 300
+	private val authorizationTimeoutSeconds: Int = 300
 ) {
 	fun connect(authorizationKey: ByteArray, connectionAcceptor: ConnectionAcceptor) {
 		ownLogger.trace { formatLoggerMessageBytes("Connect with authorization key ", authorizationKey) }
+		
+		authorizationKey.decodeToString().encodeToByteArray()
 		
 		gate.openChannel(
 			AuthorizationChannelAcceptor(
@@ -26,7 +28,7 @@ class Client(
 				version,
 				authorizationKey,
 				connectionAcceptor,
-				activityTimeoutSeconds
+				authorizationTimeoutSeconds
 			)
 		)
 	}

@@ -4,7 +4,7 @@ import ru.capjack.csi.core.Connection
 import ru.capjack.csi.core.server.ConnectionHandler
 import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
-import ru.capjack.tool.io.readToArray
+import ru.capjack.tool.io.readArray
 import kotlin.concurrent.thread
 
 class TestConnectionHandler(private val connection: Connection) : ConnectionHandler {
@@ -14,7 +14,7 @@ class TestConnectionHandler(private val connection: Connection) : ConnectionHand
 		if (message.readable) {
 			when (message.readByte()) {
 				TestApiMarker.ECHO        -> {
-					val data = message.readToArray()
+					val data = message.readArray()
 					connection.sendMessage(data)
 				}
 				TestApiMarker.SLEEP       -> {
