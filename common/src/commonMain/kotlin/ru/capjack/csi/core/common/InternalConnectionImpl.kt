@@ -23,11 +23,11 @@ import ru.capjack.tool.utils.worker.withCapture
 abstract class InternalConnectionImpl(
 	final override val id: Long,
 	private var channel: InternalChannel,
-	private var processor: ConnectionProcessor,
+	private var processor: InternalConnectionProcessor,
 	assistant: TemporalAssistant,
 	byteBuffers: ObjectPool<ByteBuffer>,
 	final override val loggingName: String
-) : InternalConnection, ChannelProcessor {
+) : InternalConnection, InternalChannelProcessor {
 	
 	override val logger: Logger = ownLogger.wrap("[$loggingName] ")
 	override val messages = Messages(byteBuffers)
@@ -203,7 +203,7 @@ abstract class InternalConnectionImpl(
 	
 	protected abstract fun syncProcessClose()
 	
-	private fun syncUseProcessor(processor: ConnectionProcessor) {
+	private fun syncUseProcessor(processor: InternalConnectionProcessor) {
 		if (this.processor != processor) {
 			if (worker.alive) {
 				this.processor = processor

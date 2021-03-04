@@ -3,7 +3,7 @@ package ru.capjack.csi.core.client._test
 import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.client.ChannelAcceptor
 import ru.capjack.csi.core.client.ChannelGate
-import ru.capjack.csi.core.common.ChannelProcessor
+import ru.capjack.csi.core.common.InternalChannelProcessor
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
@@ -52,13 +52,13 @@ open class FnInternalChannel(
 	id: Any = 1
 ) : FnChannel(send, close, id), InternalChannel {
 	
-	private var processor: ChannelProcessor? = null
+	private var processor: InternalChannelProcessor? = null
 	
-	override fun useProcessor(processor: ChannelProcessor) {
+	override fun useProcessor(processor: InternalChannelProcessor) {
 		this.processor = processor
 	}
 	
-	override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {
+	override fun useProcessor(processor: InternalChannelProcessor, activityTimeoutSeconds: Int) {
 		this.processor = processor
 	}
 	

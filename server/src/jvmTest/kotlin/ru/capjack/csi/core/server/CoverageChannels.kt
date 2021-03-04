@@ -1,7 +1,7 @@
 package ru.capjack.csi.core.server
 
 import org.junit.Test
-import ru.capjack.csi.core.common.ChannelProcessor
+import ru.capjack.csi.core.common.InternalChannelProcessor
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.server._test.FakeTemporalAssistant
 import ru.capjack.csi.core.server._test.GLOBAL_BYTE_BUFFER_POOL
@@ -25,7 +25,7 @@ class CoverageChannels {
 			1,
 			TestConnectionAuthorizer(),
 			object : ConnectionAuthorizationAcceptor<Int> {
-				override fun acceptAuthorization(channel: InternalChannel, identity: Int): ChannelProcessor = throw UnsupportedOperationException()
+				override fun acceptAuthorization(channel: InternalChannel, identity: Int): InternalChannelProcessor = throw UnsupportedOperationException()
 			},
 			object : ConnectionRecoveryAcceptor {
 				override fun acceptRecovery(connectionId: Long): ServerConnection<*>? = null
@@ -45,7 +45,7 @@ class CoverageChannels {
 			1,
 			TestConnectionAuthorizer(),
 			object : ConnectionAuthorizationAcceptor<Int> {
-				override fun acceptAuthorization(channel: InternalChannel, identity: Int): ChannelProcessor = throw UnsupportedOperationException()
+				override fun acceptAuthorization(channel: InternalChannel, identity: Int): InternalChannelProcessor = throw UnsupportedOperationException()
 			},
 			object : ConnectionRecoveryAcceptor {
 				override fun acceptRecovery(connectionId: Long): ServerConnection<*>? = null
@@ -65,7 +65,7 @@ class CoverageChannels {
 			0,
 			TestConnectionAuthorizer(),
 			object : ConnectionAuthorizationAcceptor<Int> {
-				override fun acceptAuthorization(channel: InternalChannel, identity: Int): ChannelProcessor = throw UnsupportedOperationException()
+				override fun acceptAuthorization(channel: InternalChannel, identity: Int): InternalChannelProcessor = throw UnsupportedOperationException()
 			},
 			object : ConnectionRecoveryAcceptor {
 				override fun acceptRecovery(connectionId: Long): ServerConnection<*>? = null

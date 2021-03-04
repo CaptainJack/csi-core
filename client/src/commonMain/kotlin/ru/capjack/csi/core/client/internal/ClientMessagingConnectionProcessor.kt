@@ -3,15 +3,15 @@ package ru.capjack.csi.core.client.internal
 import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.client.ChannelGate
 import ru.capjack.csi.core.client.ConnectionHandler
-import ru.capjack.csi.core.common.ConnectionProcessor
+import ru.capjack.csi.core.common.InternalConnectionProcessor
 import ru.capjack.csi.core.common.InternalConnection
 import ru.capjack.csi.core.common.Messages
 import ru.capjack.csi.core.common.MessagingConnectionProcessor
 import ru.capjack.csi.core.common.ProtocolMarker
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
-import ru.capjack.tool.lang.alsoElse
-import ru.capjack.tool.lang.alsoIf
+import ru.capjack.tool.lang.alsoFalse
+import ru.capjack.tool.lang.alsoTrue
 import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.utils.Cancelable
 import ru.capjack.tool.utils.assistant.TemporalAssistant
@@ -34,13 +34,13 @@ internal class ClientMessagingConnectionProcessor(
 		startPinger(channel)
 	}
 	
-	override fun processChannelInterrupt(connection: InternalConnection): ConnectionProcessor {
+	override fun processChannelInterrupt(connection: InternalConnection): InternalConnectionProcessor {
 		stopPinger()
 		val recoveryHandler = handler.handleConnectionLost()
 		return RecoveryConnectionProcessor(this, recoveryHandler, assistant, byteBuffers, gate, connection, activityTimeoutSeconds, lastIncomingMessageId)
 	}
 	
-	override fun doProcessConnectionRecovery(channel: Channel): ConnectionProcessor {
+	override fun doProcessConnectionRecovery(channel: Channel): InternalConnectionProcessor {
 		startPinger(channel)
 		return this
 	}
@@ -64,11 +64,11 @@ internal class ClientMessagingConnectionProcessor(
 			}
 			ProtocolMarker.SERVER_SHUTDOWN_TIMEOUT -> {
 				buffer.isReadable(4)
-					.alsoIf {
+					.alsoTrue {
 						val shutdownTimeoutSeconds = buffer.readInt()
 						handler.handleConnectionCloseTimeout(shutdownTimeoutSeconds)
 					}
-					.alsoElse {
+					.alsoFalse {
 						buffer.backRead(1)
 					}
 			}

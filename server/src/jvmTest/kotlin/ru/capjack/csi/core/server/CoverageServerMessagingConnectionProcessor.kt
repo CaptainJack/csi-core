@@ -14,7 +14,7 @@ class CoverageServerMessagingConnectionProcessor {
 	
 	@Test(UnsupportedOperationException::class)
 	fun `Unsupported processConnectionAccept`() {
-		ServerMessagingConnectionProcessor(NothingConnectionHandler, Messages(GLOBAL_BYTE_BUFFER_POOL), ownLogger, FakeTemporalAssistant, 1, 1)
+		ServerMessagingConnectionProcessor(NothingConnectionHandler, Messages(GLOBAL_BYTE_BUFFER_POOL), ownLogger, FakeTemporalAssistant, 1)
 			.processConnectionAccept(
 				NothingChannel,
 				NothingInternalConnection

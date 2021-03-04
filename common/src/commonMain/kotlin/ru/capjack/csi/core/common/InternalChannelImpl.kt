@@ -7,7 +7,7 @@ import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.DummyByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.readArray
-import ru.capjack.tool.lang.alsoElse
+import ru.capjack.tool.lang.alsoFalse
 import ru.capjack.tool.lang.make
 import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.logging.debug
@@ -25,7 +25,7 @@ import kotlin.jvm.Volatile
 
 abstract class InternalChannelImpl(
 	private var channel: Channel,
-	private var processor: ChannelProcessor,
+	private var processor: InternalChannelProcessor,
 	private var byteBuffers: ObjectPool<ByteBuffer>,
 	private var assistant: TemporalAssistant,
 	activityTimeoutSeconds: Int
@@ -100,7 +100,7 @@ abstract class InternalChannelImpl(
 		}
 	}
 	
-	override fun useProcessor(processor: ChannelProcessor) {
+	override fun useProcessor(processor: InternalChannelProcessor) {
 		if (worker.accessible && worker.alive) {
 			syncUseProcessor(processor)
 		}
@@ -109,7 +109,7 @@ abstract class InternalChannelImpl(
 		}
 	}
 	
-	override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {
+	override fun useProcessor(processor: InternalChannelProcessor, activityTimeoutSeconds: Int) {
 		if (worker.accessible && worker.alive) {
 			syncUseProcessor(processor)
 			activeChecker.cancel()
@@ -137,7 +137,7 @@ abstract class InternalChannelImpl(
 		worker.withCaptureOnLive {
 			inputBuffer.writeBuffer(data)
 			syncProcessInput()
-		} alsoElse {
+		} alsoFalse {
 			val array = data.readArray()
 			
 			worker.executeOnLive {
@@ -171,7 +171,7 @@ abstract class InternalChannelImpl(
 		}
 	}
 	
-	private fun syncUseProcessor(processor: ChannelProcessor) {
+	private fun syncUseProcessor(processor: InternalChannelProcessor) {
 		this.processor = processor
 	}
 	
@@ -217,6 +217,7 @@ abstract class InternalChannelImpl(
 		if (outputBuffer.readable) {
 			throw IllegalStateException("Output buffer must be read in full")
 		}
+		outputBuffer.clear()
 	}
 	
 	private fun syncClose(interrupted: Boolean) {

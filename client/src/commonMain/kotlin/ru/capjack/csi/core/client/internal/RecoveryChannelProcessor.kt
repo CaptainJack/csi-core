@@ -1,6 +1,6 @@
 package ru.capjack.csi.core.client.internal
 
-import ru.capjack.csi.core.common.ChannelProcessor
+import ru.capjack.csi.core.common.InternalChannelProcessor
 import ru.capjack.csi.core.common.ChannelProcessorInputResult
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.common.InternalConnection
@@ -9,7 +9,7 @@ import ru.capjack.tool.io.InputByteBuffer
 
 internal class RecoveryChannelProcessor(
 	private val connection: InternalConnection
-) : ChannelProcessor {
+) : InternalChannelProcessor {
 	
 	override fun processChannelInput(channel: InternalChannel, buffer: InputByteBuffer): ChannelProcessorInputResult {
 		if (buffer.readByte() == ProtocolMarker.RECOVERY) {

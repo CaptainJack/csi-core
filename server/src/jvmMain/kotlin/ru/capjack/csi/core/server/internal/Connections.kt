@@ -1,7 +1,7 @@
 package ru.capjack.csi.core.server.internal
 
 import ru.capjack.csi.core.Connection
-import ru.capjack.csi.core.common.ChannelProcessor
+import ru.capjack.csi.core.common.InternalChannelProcessor
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.server.ConnectionAcceptor
 import ru.capjack.csi.core.server.ConnectionRegistry
@@ -39,7 +39,7 @@ internal class Connections<I : Any>(
 		require(stopTimeoutSeconds > 0)
 	}
 	
-	override fun acceptAuthorization(channel: InternalChannel, identity: I): ChannelProcessor {
+	override fun acceptAuthorization(channel: InternalChannel, identity: I): InternalChannelProcessor {
 		logger.trace { "Accept connection $identity" }
 		
 		var connectionId: Long

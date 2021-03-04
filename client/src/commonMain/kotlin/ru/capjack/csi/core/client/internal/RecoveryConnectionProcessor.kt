@@ -3,7 +3,7 @@ package ru.capjack.csi.core.client.internal
 import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.client.ChannelGate
 import ru.capjack.csi.core.client.ConnectionRecoveryHandler
-import ru.capjack.csi.core.common.ConnectionProcessor
+import ru.capjack.csi.core.common.InternalConnectionProcessor
 import ru.capjack.csi.core.common.InternalConnection
 import ru.capjack.csi.core.common.NothingConnectionProcessor
 import ru.capjack.tool.io.ByteBuffer
@@ -12,7 +12,7 @@ import ru.capjack.tool.utils.assistant.TemporalAssistant
 import ru.capjack.tool.utils.pool.ObjectPool
 
 internal class RecoveryConnectionProcessor(
-	private var messagingProcessor: ConnectionProcessor,
+	private var messagingProcessor: InternalConnectionProcessor,
 	private var recoveryHandler: ConnectionRecoveryHandler,
 	assistant: TemporalAssistant,
 	byteBuffers: ObjectPool<ByteBuffer>,
@@ -20,7 +20,7 @@ internal class RecoveryConnectionProcessor(
 	connection: InternalConnection,
 	activityTimeoutSeconds: Int,
 	lastIncomingMessageId: Int
-) : ConnectionProcessor {
+) : InternalConnectionProcessor {
 	
 	init {
 		assistant.schedule(10) {
@@ -28,11 +28,11 @@ internal class RecoveryConnectionProcessor(
 		}
 	}
 	
-	override fun processConnectionAccept(channel: Channel, connection: InternalConnection): ConnectionProcessor {
+	override fun processConnectionAccept(channel: Channel, connection: InternalConnection): InternalConnectionProcessor {
 		throw UnsupportedOperationException()
 	}
 	
-	override fun processConnectionRecovery(channel: Channel): ConnectionProcessor {
+	override fun processConnectionRecovery(channel: Channel): InternalConnectionProcessor {
 		var p = messagingProcessor
 		val h = recoveryHandler
 		
@@ -55,7 +55,7 @@ internal class RecoveryConnectionProcessor(
 		throw UnsupportedOperationException()
 	}
 	
-	override fun processChannelInterrupt(connection: InternalConnection): ConnectionProcessor {
+	override fun processChannelInterrupt(connection: InternalConnection): InternalConnectionProcessor {
 		throw UnsupportedOperationException()
 	}
 	

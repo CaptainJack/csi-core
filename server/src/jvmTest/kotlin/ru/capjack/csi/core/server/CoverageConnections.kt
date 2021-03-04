@@ -1,7 +1,7 @@
 package ru.capjack.csi.core.server
 
 import org.junit.Test
-import ru.capjack.csi.core.common.ChannelProcessor
+import ru.capjack.csi.core.common.InternalChannelProcessor
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.common.NothingInternalChannel
 import ru.capjack.csi.core.server._test.FakeTemporalAssistant
@@ -76,9 +76,9 @@ class CoverageConnections {
 		connections.acceptAuthorization(object : InternalChannel {
 			override val id: Any = 1
 			
-			override fun useProcessor(processor: ChannelProcessor) {}
+			override fun useProcessor(processor: InternalChannelProcessor) {}
 			
-			override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {}
+			override fun useProcessor(processor: InternalChannelProcessor, activityTimeoutSeconds: Int) {}
 			
 			override fun closeWithMarker(marker: Byte) {}
 			
@@ -112,9 +112,9 @@ class CoverageConnections {
 		connections.acceptAuthorization(object : InternalChannel {
 			override val id: Any = 1
 			
-			override fun useProcessor(processor: ChannelProcessor) {}
+			override fun useProcessor(processor: InternalChannelProcessor) {}
 			
-			override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {}
+			override fun useProcessor(processor: InternalChannelProcessor, activityTimeoutSeconds: Int) {}
 			
 			override fun closeWithMarker(marker: Byte) {
 				connections.acceptRecovery(2)
@@ -127,9 +127,9 @@ class CoverageConnections {
 				connections.acceptAuthorization(object : InternalChannel {
 					override val id: Any = 1
 					
-					override fun useProcessor(processor: ChannelProcessor) {}
+					override fun useProcessor(processor: InternalChannelProcessor) {}
 					
-					override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {}
+					override fun useProcessor(processor: InternalChannelProcessor, activityTimeoutSeconds: Int) {}
 					
 					override fun closeWithMarker(marker: Byte) {}
 					
@@ -170,9 +170,9 @@ class CoverageConnections {
 		connections.acceptAuthorization(object : InternalChannel {
 			override val id: Any = 1
 			
-			override fun useProcessor(processor: ChannelProcessor) {}
+			override fun useProcessor(processor: InternalChannelProcessor) {}
 			
-			override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {}
+			override fun useProcessor(processor: InternalChannelProcessor, activityTimeoutSeconds: Int) {}
 			
 			override fun closeWithMarker(marker: Byte) {}
 			

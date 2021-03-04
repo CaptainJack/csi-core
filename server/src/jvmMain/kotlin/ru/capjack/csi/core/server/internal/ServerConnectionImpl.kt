@@ -1,6 +1,6 @@
 package ru.capjack.csi.core.server.internal
 
-import ru.capjack.csi.core.common.ConnectionProcessor
+import ru.capjack.csi.core.common.InternalConnectionProcessor
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.common.InternalConnectionImpl
 import ru.capjack.tool.io.ByteBuffer
@@ -13,7 +13,7 @@ internal class ServerConnectionImpl<I : Any>(
 	id: Long,
 	override val identity: I,
 	channel: InternalChannel,
-	processor: ConnectionProcessor,
+	processor: InternalConnectionProcessor,
 	assistant: TemporalAssistant,
 	byteBuffers: ObjectPool<ByteBuffer>,
 	private val releaser: ServerConnectionReleaser<I>

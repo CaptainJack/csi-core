@@ -1,16 +1,16 @@
 package ru.capjack.csi.core.server.internal
 
 import ru.capjack.csi.core.ProtocolBrokenException
-import ru.capjack.csi.core.common.ChannelProcessor
+import ru.capjack.csi.core.common.InternalChannelProcessor
 import ru.capjack.csi.core.common.ChannelProcessorInputResult
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.common.ProtocolMarker
 import ru.capjack.tool.io.InputByteBuffer
 
 internal class ReceptionChannelProcessor(
-	private val authorization: ChannelProcessor,
-	private val recovery: ChannelProcessor
-) : ChannelProcessor {
+	private val authorization: InternalChannelProcessor,
+	private val recovery: InternalChannelProcessor
+) : InternalChannelProcessor {
 	
 	override fun processChannelInput(channel: InternalChannel, buffer: InputByteBuffer): ChannelProcessorInputResult {
 		return when (val marker = buffer.readByte()) {

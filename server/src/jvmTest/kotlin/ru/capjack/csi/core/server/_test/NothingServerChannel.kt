@@ -1,6 +1,6 @@
 package ru.capjack.csi.core.server._test
 
-import ru.capjack.csi.core.common.ChannelProcessor
+import ru.capjack.csi.core.common.InternalChannelProcessor
 import ru.capjack.csi.core.server.internal.ServerChannel
 import ru.capjack.tool.io.InputByteBuffer
 
@@ -28,11 +28,11 @@ object NothingServerChannel : ServerChannel {
 		throw UnsupportedOperationException()
 	}
 	
-	override fun useProcessor(processor: ChannelProcessor) {
+	override fun useProcessor(processor: InternalChannelProcessor) {
 		throw UnsupportedOperationException()
 	}
 	
-	override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {
+	override fun useProcessor(processor: InternalChannelProcessor, activityTimeoutSeconds: Int) {
 		throw UnsupportedOperationException()
 	}
 }

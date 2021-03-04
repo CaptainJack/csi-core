@@ -5,8 +5,8 @@ import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.ProtocolBrokenException
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.SubInputByteBuffer
-import ru.capjack.tool.lang.alsoIf
-import ru.capjack.tool.lang.letIf
+import ru.capjack.tool.lang.alsoTrue
+import ru.capjack.tool.lang.letTrue
 import ru.capjack.tool.logging.Logger
 import ru.capjack.tool.logging.trace
 
@@ -14,7 +14,7 @@ abstract class MessagingConnectionProcessor<H : BaseConnectionHandler>(
 	handler: H,
 	private val messages: Messages,
 	protected val logger: Logger
-) : ConnectionProcessor {
+) : InternalConnectionProcessor {
 	
 	private enum class InputState {
 		MARKER,
@@ -33,11 +33,11 @@ abstract class MessagingConnectionProcessor<H : BaseConnectionHandler>(
 	private var inputMessageId = 0
 	private val inputMessageBuffer = SubInputByteBuffer()
 	
-	final override fun processConnectionAccept(channel: Channel, connection: InternalConnection): ConnectionProcessor {
+	final override fun processConnectionAccept(channel: Channel, connection: InternalConnection): InternalConnectionProcessor {
 		throw UnsupportedOperationException()
 	}
 	
-	final override fun processConnectionRecovery(channel: Channel): ConnectionProcessor {
+	final override fun processConnectionRecovery(channel: Channel): InternalConnectionProcessor {
 		inputState = InputState.MARKER
 		inputMessageId = 0
 		return doProcessConnectionRecovery(channel)
@@ -63,7 +63,7 @@ abstract class MessagingConnectionProcessor<H : BaseConnectionHandler>(
 	
 	protected abstract fun doProcessConnectionClose(): H
 	
-	protected abstract fun doProcessConnectionRecovery(channel: Channel): ConnectionProcessor
+	protected abstract fun doProcessConnectionRecovery(channel: Channel): InternalConnectionProcessor
 	
 	protected open fun processChannelInputMarker(channel: Channel, buffer: InputByteBuffer, marker: Byte): Boolean {
 		return when (marker) {
@@ -92,7 +92,7 @@ abstract class MessagingConnectionProcessor<H : BaseConnectionHandler>(
 	}
 	
 	private fun processChannelInputMessageId(buffer: InputByteBuffer): Boolean {
-		return buffer.isReadable(4).letIf {
+		return buffer.isReadable(4).letTrue {
 			inputMessageId = buffer.readInt()
 			inputState = InputState.MESSAGE_BODY
 			processChannelInputMessageBody(buffer)
@@ -131,7 +131,7 @@ abstract class MessagingConnectionProcessor<H : BaseConnectionHandler>(
 	}
 	
 	private fun processChannelInputMessageReceived(buffer: InputByteBuffer): Boolean {
-		return alsoIf(buffer.isReadable(4)) {
+		return alsoTrue(buffer.isReadable(4)) {
 			val messageId = buffer.readInt()
 			
 			logger.trace { "Outgoing message $messageId is delivered" }

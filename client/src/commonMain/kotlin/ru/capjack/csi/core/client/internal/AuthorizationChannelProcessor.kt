@@ -3,7 +3,7 @@ package ru.capjack.csi.core.client.internal
 import ru.capjack.csi.core.client.ChannelGate
 import ru.capjack.csi.core.client.ConnectFailReason
 import ru.capjack.csi.core.client.ConnectionAcceptor
-import ru.capjack.csi.core.common.ChannelProcessor
+import ru.capjack.csi.core.common.InternalChannelProcessor
 import ru.capjack.csi.core.common.ChannelProcessorInputResult
 import ru.capjack.csi.core.common.InternalChannel
 import ru.capjack.csi.core.common.ProtocolMarker
@@ -17,7 +17,7 @@ internal class AuthorizationChannelProcessor(
 	private val byteBuffers: ObjectPool<ByteBuffer>,
 	private val gate: ChannelGate,
 	private var acceptor: ConnectionAcceptor
-) : ChannelProcessor {
+) : InternalChannelProcessor {
 	
 	override fun processChannelInput(channel: InternalChannel, buffer: InputByteBuffer): ChannelProcessorInputResult {
 		val marker = buffer.readByte()

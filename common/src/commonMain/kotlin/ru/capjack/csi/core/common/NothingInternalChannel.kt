@@ -22,11 +22,11 @@ object NothingInternalChannel : InternalChannel {
 		throw UnsupportedOperationException()
 	}
 	
-	override fun useProcessor(processor: ChannelProcessor) {
+	override fun useProcessor(processor: InternalChannelProcessor) {
 		throw UnsupportedOperationException()
 	}
 	
-	override fun useProcessor(processor: ChannelProcessor, activityTimeoutSeconds: Int) {
+	override fun useProcessor(processor: InternalChannelProcessor, activityTimeoutSeconds: Int) {
 		throw UnsupportedOperationException()
 	}
 	

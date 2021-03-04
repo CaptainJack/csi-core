@@ -2,7 +2,7 @@ package ru.capjack.csi.core.common
 
 import ru.capjack.tool.io.InputByteBuffer
 
-object NothingChannelProcessor : ChannelProcessor {
+object NothingChannelProcessor : InternalChannelProcessor {
 	override fun processChannelInput(channel: InternalChannel, buffer: InputByteBuffer): ChannelProcessorInputResult {
 		throw UnsupportedOperationException()
 	}
