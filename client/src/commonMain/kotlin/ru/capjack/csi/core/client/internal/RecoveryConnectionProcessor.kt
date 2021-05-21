@@ -3,9 +3,9 @@ package ru.capjack.csi.core.client.internal
 import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.client.ChannelGate
 import ru.capjack.csi.core.client.ConnectionRecoveryHandler
-import ru.capjack.csi.core.common.InternalConnectionProcessor
-import ru.capjack.csi.core.common.InternalConnection
-import ru.capjack.csi.core.common.NothingConnectionProcessor
+import ru.capjack.csi.core.internal.InternalConnectionProcessor
+import ru.capjack.csi.core.internal.InternalConnection
+import ru.capjack.csi.core.internal.NothingConnectionProcessor
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.utils.assistant.TemporalAssistant

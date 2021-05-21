@@ -1,8 +1,8 @@
 package ru.capjack.csi.core.server
 
-import ru.capjack.csi.core.common.Messages
-import ru.capjack.csi.core.common.NothingChannel
-import ru.capjack.csi.core.common.NothingInternalConnection
+import ru.capjack.csi.core.internal.Messages
+import ru.capjack.csi.core.internal.NothingChannel
+import ru.capjack.csi.core.internal.NothingInternalConnection
 import ru.capjack.csi.core.server._test.FakeTemporalAssistant
 import ru.capjack.csi.core.server._test.GLOBAL_BYTE_BUFFER_POOL
 import ru.capjack.csi.core.server.internal.NothingConnectionHandler

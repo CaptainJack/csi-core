@@ -1,7 +1,7 @@
 package ru.capjack.csi.core.server._test
 
-import ru.capjack.csi.core.common.InternalChannelProcessor
-import ru.capjack.csi.core.common.InternalChannel
+import ru.capjack.csi.core.internal.InternalChannelProcessor
+import ru.capjack.csi.core.internal.InternalChannel
 import ru.capjack.tool.io.InputByteBuffer
 
 object EmptyInternalChannel : InternalChannel {

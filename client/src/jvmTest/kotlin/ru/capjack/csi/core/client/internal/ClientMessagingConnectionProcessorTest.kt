@@ -10,9 +10,9 @@ import ru.capjack.csi.core.client._test.assertEqualsBytes
 import ru.capjack.csi.core.client._test.buffer
 import ru.capjack.csi.core.client._test.gate
 import ru.capjack.csi.core.client._test.write
-import ru.capjack.csi.core.common.Messages
-import ru.capjack.csi.core.common.NothingChannel
-import ru.capjack.csi.core.common.NothingInternalConnection
+import ru.capjack.csi.core.internal.Messages
+import ru.capjack.csi.core.internal.NothingChannel
+import ru.capjack.csi.core.internal.NothingInternalConnection
 import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.lang.waitIf

@@ -1,4 +1,4 @@
-package ru.capjack.csi.core.common
+package ru.capjack.csi.core.internal
 
 import ru.capjack.csi.core.BaseConnectionHandler
 import ru.capjack.csi.core.Channel

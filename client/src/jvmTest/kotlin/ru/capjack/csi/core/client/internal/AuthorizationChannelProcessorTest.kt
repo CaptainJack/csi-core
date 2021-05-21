@@ -10,7 +10,7 @@ import ru.capjack.csi.core.client._test.buffer
 import ru.capjack.csi.core.client._test.gate
 import ru.capjack.csi.core.client._test.waitIfSecond
 import ru.capjack.csi.core.client._test.write
-import ru.capjack.csi.core.common.NothingInternalChannel
+import ru.capjack.csi.core.internal.NothingInternalChannel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

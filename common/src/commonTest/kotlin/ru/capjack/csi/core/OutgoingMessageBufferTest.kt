@@ -1,7 +1,7 @@
 package ru.capjack.csi.core
 
-import ru.capjack.csi.core.common.OutgoingMessageBuffer
-import ru.capjack.csi.core.common.ProtocolMarker
+import ru.capjack.csi.core.internal.OutgoingMessageBuffer
+import ru.capjack.csi.core.internal.ProtocolMarker
 import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.io.readArray
 import kotlin.test.Test

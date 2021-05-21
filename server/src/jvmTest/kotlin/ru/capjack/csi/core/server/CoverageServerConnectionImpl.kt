@@ -1,7 +1,7 @@
 package ru.capjack.csi.core.server
 
 import org.junit.Test
-import ru.capjack.csi.core.common.NothingInternalChannel
+import ru.capjack.csi.core.internal.NothingInternalChannel
 import ru.capjack.csi.core.server._test.EmptyConnectionProcessor
 import ru.capjack.csi.core.server._test.EmptyInternalChannel
 import ru.capjack.csi.core.server._test.EmptyServerConnectionReleaser

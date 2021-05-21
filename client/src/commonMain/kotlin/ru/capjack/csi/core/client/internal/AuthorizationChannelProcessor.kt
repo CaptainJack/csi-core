@@ -3,10 +3,10 @@ package ru.capjack.csi.core.client.internal
 import ru.capjack.csi.core.client.ChannelGate
 import ru.capjack.csi.core.client.ConnectFailReason
 import ru.capjack.csi.core.client.ConnectionAcceptor
-import ru.capjack.csi.core.common.InternalChannelProcessor
-import ru.capjack.csi.core.common.ChannelProcessorInputResult
-import ru.capjack.csi.core.common.InternalChannel
-import ru.capjack.csi.core.common.ProtocolMarker
+import ru.capjack.csi.core.internal.InternalChannelProcessor
+import ru.capjack.csi.core.internal.ChannelProcessorInputResult
+import ru.capjack.csi.core.internal.InternalChannel
+import ru.capjack.csi.core.internal.ProtocolMarker
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.utils.assistant.TemporalAssistant

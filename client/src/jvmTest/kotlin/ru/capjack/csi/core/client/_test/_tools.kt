@@ -3,8 +3,8 @@ package ru.capjack.csi.core.client._test
 import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.client.ChannelAcceptor
 import ru.capjack.csi.core.client.ChannelGate
-import ru.capjack.csi.core.common.InternalChannelProcessor
-import ru.capjack.csi.core.common.InternalChannel
+import ru.capjack.csi.core.internal.InternalChannelProcessor
+import ru.capjack.csi.core.internal.InternalChannel
 import ru.capjack.tool.io.ArrayByteBuffer
 import ru.capjack.tool.io.InputByteBuffer
 import java.time.Clock

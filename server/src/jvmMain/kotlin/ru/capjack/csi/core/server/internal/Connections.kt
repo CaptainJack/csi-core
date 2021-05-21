@@ -1,8 +1,8 @@
 package ru.capjack.csi.core.server.internal
 
 import ru.capjack.csi.core.Connection
-import ru.capjack.csi.core.common.InternalChannelProcessor
-import ru.capjack.csi.core.common.InternalChannel
+import ru.capjack.csi.core.internal.InternalChannelProcessor
+import ru.capjack.csi.core.internal.InternalChannel
 import ru.capjack.csi.core.server.ConnectionAcceptor
 import ru.capjack.csi.core.server.ConnectionRegistry
 import ru.capjack.tool.io.ByteBuffer

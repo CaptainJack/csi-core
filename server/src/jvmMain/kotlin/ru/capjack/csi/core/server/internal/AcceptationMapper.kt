@@ -1,6 +1,6 @@
 package ru.capjack.csi.core.server.internal
 
-import ru.capjack.csi.core.common.ProtocolMarker
+import ru.capjack.csi.core.internal.ProtocolMarker
 import java.util.function.BiFunction
 
 internal class AcceptationMapper<I : Any>(

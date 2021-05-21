@@ -3,8 +3,8 @@ package ru.capjack.csi.core.client.internal
 import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.ChannelHandler
 import ru.capjack.csi.core.client.ChannelAcceptor
-import ru.capjack.csi.core.common.InternalConnection
-import ru.capjack.csi.core.common.ProtocolMarker
+import ru.capjack.csi.core.internal.InternalConnection
+import ru.capjack.csi.core.internal.ProtocolMarker
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.putInt
 import ru.capjack.tool.io.putLong

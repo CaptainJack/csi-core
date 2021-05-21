@@ -1,7 +1,7 @@
 package ru.capjack.csi.core.client
 
 import ru.capjack.csi.core.client.internal.AuthorizationChannelAcceptor
-import ru.capjack.csi.core.common.formatLoggerMessageBytes
+import ru.capjack.csi.core.internal.formatLoggerMessageBytes
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.logging.ownLogger
 import ru.capjack.tool.logging.trace

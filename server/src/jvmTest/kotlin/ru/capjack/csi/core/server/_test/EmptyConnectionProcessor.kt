@@ -1,9 +1,9 @@
 package ru.capjack.csi.core.server._test
 
 import ru.capjack.csi.core.Channel
-import ru.capjack.csi.core.common.InternalConnectionProcessor
-import ru.capjack.csi.core.common.InternalConnection
-import ru.capjack.csi.core.common.NothingConnectionProcessor
+import ru.capjack.csi.core.internal.InternalConnectionProcessor
+import ru.capjack.csi.core.internal.InternalConnection
+import ru.capjack.csi.core.internal.NothingConnectionProcessor
 import ru.capjack.tool.io.InputByteBuffer
 
 object EmptyConnectionProcessor : InternalConnectionProcessor {

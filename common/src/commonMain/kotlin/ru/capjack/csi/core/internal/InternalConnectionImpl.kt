@@ -1,4 +1,4 @@
-package ru.capjack.csi.core.common
+package ru.capjack.csi.core.internal
 
 import ru.capjack.csi.core.ProtocolBrokenException
 import ru.capjack.tool.io.ByteBuffer
@@ -245,9 +245,7 @@ abstract class InternalConnectionImpl(
 		
 		logger.debug { "Close with marker ${ProtocolMarker.toString(marker)}" }
 		
-		val c = channel
-		syncTerminate()
-		c.closeWithMarker(marker)
+		channel.closeWithMarker(marker)
 	}
 	
 	private fun syncTerminate() {

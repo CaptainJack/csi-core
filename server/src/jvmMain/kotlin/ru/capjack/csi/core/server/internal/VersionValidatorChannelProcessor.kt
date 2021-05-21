@@ -1,9 +1,9 @@
 package ru.capjack.csi.core.server.internal
 
-import ru.capjack.csi.core.common.InternalChannelProcessor
-import ru.capjack.csi.core.common.ChannelProcessorInputResult
-import ru.capjack.csi.core.common.InternalChannel
-import ru.capjack.csi.core.common.ProtocolMarker
+import ru.capjack.csi.core.internal.InternalChannelProcessor
+import ru.capjack.csi.core.internal.ChannelProcessorInputResult
+import ru.capjack.csi.core.internal.InternalChannel
+import ru.capjack.csi.core.internal.ProtocolMarker
 import ru.capjack.tool.io.InputByteBuffer
 
 internal class VersionValidatorChannelProcessor(

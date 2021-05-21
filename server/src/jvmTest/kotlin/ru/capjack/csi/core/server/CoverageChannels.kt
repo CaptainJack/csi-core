@@ -1,8 +1,8 @@
 package ru.capjack.csi.core.server
 
 import org.junit.Test
-import ru.capjack.csi.core.common.InternalChannelProcessor
-import ru.capjack.csi.core.common.InternalChannel
+import ru.capjack.csi.core.internal.InternalChannelProcessor
+import ru.capjack.csi.core.internal.InternalChannel
 import ru.capjack.csi.core.server._test.FakeTemporalAssistant
 import ru.capjack.csi.core.server._test.GLOBAL_BYTE_BUFFER_POOL
 import ru.capjack.csi.core.server._test.TestConnectionAuthorizer

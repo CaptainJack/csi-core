@@ -2,9 +2,9 @@ package ru.capjack.csi.core.server.internal
 
 import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.ProtocolBrokenException
-import ru.capjack.csi.core.common.InternalConnectionProcessor
-import ru.capjack.csi.core.common.InternalConnection
-import ru.capjack.csi.core.common.ProtocolMarker
+import ru.capjack.csi.core.internal.InternalConnectionProcessor
+import ru.capjack.csi.core.internal.InternalConnection
+import ru.capjack.csi.core.internal.ProtocolMarker
 import ru.capjack.csi.core.server.ConnectionAcceptor
 import ru.capjack.tool.io.InputByteBuffer
 import ru.capjack.tool.io.putInt

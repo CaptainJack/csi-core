@@ -1,8 +1,8 @@
 package ru.capjack.csi.core.client.internal
 
-import ru.capjack.csi.core.common.InternalChannel
-import ru.capjack.csi.core.common.InternalConnectionImpl
-import ru.capjack.csi.core.common.InternalConnectionProcessor
+import ru.capjack.csi.core.internal.InternalChannel
+import ru.capjack.csi.core.internal.InternalConnectionImpl
+import ru.capjack.csi.core.internal.InternalConnectionProcessor
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.lang.toHexString
 import ru.capjack.tool.utils.assistant.TemporalAssistant

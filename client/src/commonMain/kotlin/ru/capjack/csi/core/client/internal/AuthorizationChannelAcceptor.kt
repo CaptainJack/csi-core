@@ -6,7 +6,7 @@ import ru.capjack.csi.core.client.ChannelAcceptor
 import ru.capjack.csi.core.client.ChannelGate
 import ru.capjack.csi.core.client.ConnectFailReason
 import ru.capjack.csi.core.client.ConnectionAcceptor
-import ru.capjack.csi.core.common.ProtocolMarker
+import ru.capjack.csi.core.internal.ProtocolMarker
 import ru.capjack.tool.io.ByteBuffer
 import ru.capjack.tool.io.putByteArray
 import ru.capjack.tool.io.putInt

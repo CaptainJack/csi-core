@@ -2,8 +2,8 @@ package ru.capjack.csi.core.server.internal
 
 import ru.capjack.csi.core.Channel
 import ru.capjack.csi.core.ChannelHandler
-import ru.capjack.csi.core.common.DummyChannelHandler
-import ru.capjack.csi.core.common.ProtocolMarker
+import ru.capjack.csi.core.internal.DummyChannelHandler
+import ru.capjack.csi.core.internal.ProtocolMarker
 import ru.capjack.csi.core.server.ChannelAcceptor
 import ru.capjack.csi.core.server.ConnectionAuthorizer
 import ru.capjack.tool.io.ByteBuffer
