@@ -245,20 +245,24 @@ abstract class InternalConnectionImpl(
 		
 		logger.debug { "Close with marker ${ProtocolMarker.toString(marker)}" }
 		
-		channel.closeWithMarker(marker)
+		val c = channel
+		syncTerminate()
+		c.closeWithMarker(marker)
 	}
 	
 	private fun syncTerminate() {
-		val p = processor
-		
-		worker.die()
-		processor = NothingConnectionProcessor
-		channel = NothingInternalChannel
-		messages.outgoing.dispose()
-		
-		p.processConnectionClose()
-		
-		syncProcessClose()
+		if (worker.alive) {
+			val p = processor
+			
+			worker.die()
+			processor = NothingConnectionProcessor
+			channel = NothingInternalChannel
+			messages.outgoing.dispose()
+			
+			p.processConnectionClose()
+			
+			syncProcessClose()
+		}
 	}
 }
 

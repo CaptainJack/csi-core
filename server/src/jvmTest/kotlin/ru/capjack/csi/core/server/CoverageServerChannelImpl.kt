@@ -125,6 +125,8 @@ class CoverageServerChannelImpl {
 		)
 		
 		channel.closeWithMarker(0)
+		
+		sleep(3000)
 	}
 	
 	@Test(expected = IllegalStateException::class)
@@ -166,14 +168,14 @@ class CoverageServerChannelImpl {
 				}
 			})
 		
-		channel.send(0)
+		channel.send(1)
 		
 		channel.close()
-		channel.send(1)
+		channel.send(2)
 		
 		waitIf(1000) { opened }
 		
-		channel.send(2)
+		channel.send(3)
 	}
 	
 	@Test

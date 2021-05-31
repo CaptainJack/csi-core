@@ -1,6 +1,7 @@
 package ru.capjack.csi.core.internal
 
 import ru.capjack.tool.io.InputByteBuffer
+import ru.capjack.tool.io.readArray
 import ru.capjack.tool.lang.toHexString
 
 fun formatLoggerMessageBytes(prefix: String, data: Byte): String {
@@ -17,8 +18,13 @@ fun formatLoggerMessageBytes(prefix: String, data: ByteArray): String {
 
 fun formatLoggerMessageBytes(prefix: String, data: InputByteBuffer): String {
 	val size = data.readableSize
-	val view = data.readableArrayView
-	return formatLoggerMessageBytes(prefix, view.array, view.readerIndex, size)
+	val view = data.arrayView
+	return if (view == null) {
+		val array = data.readArray()
+		data.backRead(size)
+		formatLoggerMessageBytes(prefix, array, 0, size)
+	}
+	else formatLoggerMessageBytes(prefix, view.array, view.readerIndex, size)
 }
 
 private fun formatLoggerMessageBytes(prefix: String, array: ByteArray, offset: Int, size: Int): String {

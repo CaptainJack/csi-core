@@ -1,6 +1,6 @@
 plugins {
 	kotlin("multiplatform")
-	id("ru.capjack.bintray")
+	id("ru.capjack.depver")
 }
 
 kotlin {
@@ -17,16 +17,7 @@ kotlin {
 			api("ru.capjack.tool:tool-utils")
 		}
 		get("commonTest").dependencies {
-			implementation(kotlin("test-common"))
-			implementation(kotlin("test-annotations-common"))
-		}
-		
-		get("jvmTest").dependencies {
-			implementation(kotlin("test-junit"))
-		}
-		
-		get("jsTest").dependencies {
-			implementation(kotlin("test-js"))
+			implementation(kotlin("test"))
 		}
 	}
 }

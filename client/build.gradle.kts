@@ -1,6 +1,6 @@
 plugins {
 	kotlin("multiplatform")
-	id("ru.capjack.bintray")
+	id("ru.capjack.depver")
 	jacoco
 }
 
@@ -17,22 +17,20 @@ kotlin {
 			api(project(":csi-core-common"))
 		}
 		get("commonTest").dependencies {
-			implementation(kotlin("test-common"))
-			implementation(kotlin("test-annotations-common"))
+			implementation(kotlin("test"))
 		}
 		
 		get("jvmMain").dependencies {
 			implementation(kotlin("reflect"))
 		}
 		get("jvmTest").dependencies {
-			implementation(kotlin("test-junit"))
 			implementation("ch.qos.logback:logback-classic")
 		}
 	}
 }
 
 jacoco {
-	toolVersion = "0.8.6"
+	toolVersion = "0.8.7"
 }
 
 tasks.register<JacocoReport>("jvmTestCodeCoverageReport") {
