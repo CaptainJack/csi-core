@@ -1,6 +1,7 @@
 plugins {
 	kotlin("multiplatform")
 	id("ru.capjack.depver")
+	id("ru.capjack.publisher")
 }
 
 kotlin {
