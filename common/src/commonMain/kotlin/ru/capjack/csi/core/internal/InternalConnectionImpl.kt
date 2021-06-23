@@ -127,6 +127,10 @@ abstract class InternalConnectionImpl(
 		closeWithMarker(ProtocolMarker.CLOSE_DEFINITELY, handler)
 	}
 	
+	override fun closeDueError() {
+		closeWithMarker(ProtocolMarker.CLOSE_ERROR)
+	}
+	
 	override fun closeWithMarker(marker: Byte) {
 		closeWithMarker(marker, EMPTY_FUNCTION_0)
 	}

@@ -15,4 +15,6 @@ interface Connection {
 	fun close()
 	
 	fun close(handler: () -> Unit)
+	
+	fun closeDueError()
 }
