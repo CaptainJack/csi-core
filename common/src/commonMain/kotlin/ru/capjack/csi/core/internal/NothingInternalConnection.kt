@@ -51,4 +51,8 @@ object NothingInternalConnection : InternalConnection {
 	override fun closeWithMarker(marker: Byte, handler: () -> Unit) {
 		throw UnsupportedOperationException()
 	}
+	
+	override fun closeDueError() {
+		throw UnsupportedOperationException()
+	}
 }

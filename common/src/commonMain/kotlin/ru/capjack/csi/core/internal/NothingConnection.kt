@@ -29,4 +29,8 @@ object NothingConnection : Connection {
 	override fun close(handler: () -> Unit) {
 		throw UnsupportedOperationException()
 	}
+	
+	override fun closeDueError() {
+		throw UnsupportedOperationException()
+	}
 }
