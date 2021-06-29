@@ -33,7 +33,7 @@ internal class AuthorizationChannelProcessor(
 					byteBuffers
 				)
 				acceptor = NothingConnectionAcceptor()
-				channel.useProcessor(connection, activityTimeoutSeconds)
+				channel.useProcessor(connection, activityTimeoutSeconds * 2)
 				connection.accept()
 				return ChannelProcessorInputResult.CONTINUE
 			}
