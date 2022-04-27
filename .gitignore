@@ -2,5 +2,6 @@
 .idea
 tmp
 build
+kotlin-js-store
 
 .DS_Store
