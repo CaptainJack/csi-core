@@ -1,7 +1,7 @@
-.gradle
-.idea
-tmp
-build
-kotlin-js-store
+.gradle/
+.idea/
+tmp/
+build/
+kotlin-js-store/
 
 .DS_Store
