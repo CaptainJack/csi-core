@@ -7,3 +7,10 @@ include(
 )
 
 rootProject.children.forEach { it.name = "${rootProject.name}-${it.name}" }
+
+pluginManagement {
+	repositories {
+		gradlePluginPortal()
+		maven("https://artifactory.appodeal.com/appodeal-public/")
+	}
+}

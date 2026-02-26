@@ -82,7 +82,7 @@ abstract class MessagingConnectionProcessor<H : BaseConnectionHandler>(
 			ProtocolMarker.CLOSE_ACTIVITY_TIMEOUT,
 			ProtocolMarker.CLOSE_ERROR,
 			ProtocolMarker.CLOSE_PROTOCOL_BROKEN -> {
-				logger.error("Closing because of the received marker ${ProtocolMarker.toString(marker)}")
+				logger.warn("Closing because of the received marker ${ProtocolMarker.toString(marker)}")
 				channel.close()
 				false
 			}
